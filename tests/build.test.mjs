@@ -9,8 +9,16 @@ import {
   readTar as readArchive,
 } from '../scripts/lib/archive.mjs';
 import {
+  formatUnicodeRanges,
+  generateFontCss,
+  inspectFont,
+  intervalsFromCodePoints,
+} from '../scripts/lib/font.mjs';
+import { stableStringify } from '../scripts/lib/json.mjs';
+import {
   verifyFamilyPair,
   verifyFamilyPackageBuffer,
+  verifySourceArchiveBuffer,
 } from '../scripts/lib/verify.mjs';
 import {
   makeCoreDescriptor,
@@ -95,6 +103,103 @@ test('fixture core family produces multiple disjoint shards covering the source 
   );
   const verified = verifyFamilyPair(packageData, sourceData, descriptors[0]);
   assert.ok(verified.family.manifest.variants.length > 1);
+});
+
+test('core pair verification rejects a package that no longer covers the source cmap', async (t) => {
+  const descriptor = makeCoreDescriptor();
+  const fixture = await createFixtureRepo([descriptor]);
+  t.after(() => fs.promises.rm(fixture.root, { recursive: true, force: true }));
+  const built = await buildFixture({
+    kind: 'core',
+    root: fixture.root,
+    out: path.join(fixture.root, 'out'),
+  });
+  const packageData = await fs.promises.readFile(
+    path.join(fixture.root, 'out', built.packageFileName),
+  );
+  const sourceData = await fs.promises.readFile(
+    path.join(fixture.root, 'out', built.sourceFileName),
+  );
+  const entries = readArchive(packageData, {
+    strictDeterministic: true,
+    requireGzip: true,
+  });
+  const manifestEntry = entries.find((entry) => entry.path === 'manifest.json');
+  const manifest = JSON.parse(manifestEntry.data.toString('utf8'));
+  const firstVariant = manifest.variants[0];
+  const firstVariantEntry = entries.find(
+    (entry) => entry.path === firstVariant.file,
+  );
+  const firstInspection = inspectFont(firstVariantEntry.data);
+  const chosen = [...firstInspection.characterSet].sort((left, right) => left - right)[0];
+  firstVariant.unicodeRange = formatUnicodeRanges(intervalsFromCodePoints([chosen]));
+  firstVariant.cmapAliases = [...firstInspection.characterSet]
+    .filter((codePoint) => codePoint !== chosen)
+    .sort((left, right) => left - right);
+  const tampered = entries.map((entry) => {
+    if (entry.path === 'manifest.json') {
+      return { ...entry, data: Buffer.from(stableStringify(manifest)) };
+    }
+    if (entry.path === 'font.css') {
+      return {
+        ...entry,
+        data: Buffer.from(
+          generateFontCss({
+            familyName: manifest.familyName,
+            variants: manifest.variants,
+          }),
+        ),
+      };
+    }
+    return entry;
+  });
+  assert.throws(
+    () =>
+      verifyFamilyPair(
+        createDeterministicTarGz(tampered),
+        sourceData,
+        descriptor,
+      ),
+    /do not cover source character/,
+  );
+});
+
+test('source verification rejects a nested source path with an undeclared location', async (t) => {
+  const descriptor = makeFixedDescriptor();
+  const fixture = await createFixtureRepo([descriptor]);
+  t.after(() => fs.promises.rm(fixture.root, { recursive: true, force: true }));
+  const built = await buildFixture({
+    kind: 'fixed',
+    root: fixture.root,
+    out: path.join(fixture.root, 'out'),
+  });
+  const sourceData = await fs.promises.readFile(
+    path.join(fixture.root, 'out', built.sourceFileName),
+  );
+  const entries = readArchive(sourceData, {
+    strictDeterministic: true,
+    requireGzip: true,
+  });
+  const manifestEntry = entries.find(
+    (entry) => entry.path === 'source-manifest.json',
+  );
+  const manifest = JSON.parse(manifestEntry.data.toString('utf8'));
+  const originalPath = manifest.files[0].file;
+  const nestedPath = `source/fonts/nested/${originalPath.slice('source/fonts/'.length)}`;
+  manifest.files[0].file = nestedPath;
+  const tampered = entries.map((entry) => {
+    if (entry.path === 'source-manifest.json') {
+      return { ...entry, data: Buffer.from(stableStringify(manifest)) };
+    }
+    if (entry.path === originalPath) {
+      return { ...entry, path: nestedPath };
+    }
+    return entry;
+  });
+  assert.throws(
+    () => verifySourceArchiveBuffer(createDeterministicTarGz(tampered), descriptor),
+    /undeclared file/,
+  );
 });
 
 test('package verification rejects changed, missing, and undeclared files', async (t) => {

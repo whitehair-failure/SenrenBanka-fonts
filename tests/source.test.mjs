@@ -31,6 +31,39 @@ test('downloadBytes only accepts HTTPS and reports HTTP failures', async () => {
   assert.equal(data.toString(), 'font-bytes');
 });
 
+test('downloadBytes follows HTTPS redirects but rejects HTTPS-to-HTTP downgrades', async () => {
+  const calls = [];
+  const redirected = await downloadBytes('https://example.com/font', {
+    fetchImpl: async (url) => {
+      calls.push(url);
+      if (url === 'https://example.com/font') {
+        return new Response(null, {
+          status: 302,
+          headers: { location: 'https://cdn.example.com/font' },
+        });
+      }
+      return new Response(Buffer.from('font-bytes'), { status: 200 });
+    },
+  });
+  assert.equal(redirected.toString(), 'font-bytes');
+  assert.deepEqual(calls, [
+    'https://example.com/font',
+    'https://cdn.example.com/font',
+  ]);
+
+  await assert.rejects(
+    () =>
+      downloadBytes('https://example.com/font', {
+        fetchImpl: async () =>
+          new Response(null, {
+            status: 302,
+            headers: { location: 'http://insecure.example.com/font' },
+          }),
+      }),
+    /HTTPS/,
+  );
+});
+
 test('bootstrap inputs verify size and SHA-256', async (t) => {
   const root = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'font-source-test-'));
   t.after(() => fs.promises.rm(root, { recursive: true, force: true }));

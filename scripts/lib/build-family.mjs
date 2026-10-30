@@ -50,6 +50,9 @@ function validateFixedFonts(descriptor, resolved) {
 
   const output = [];
   for (const variant of descriptor.output.variants) {
+    if (!/\.woff2$/i.test(variant.file)) {
+      throw new Error(`${descriptor.id} fixed output ${variant.file} must be WOFF2`);
+    }
     const source = resolved.get(variant.sourceFile);
     const inspection = inspectFont(
       source.data,

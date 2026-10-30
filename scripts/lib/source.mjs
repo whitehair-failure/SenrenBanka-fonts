@@ -5,6 +5,8 @@ import { sha256, verifySha256 } from './hash.mjs';
 import { resolveInside } from './paths.mjs';
 
 const DEFAULT_MAX_DOWNLOAD_BYTES = 256 * 1024 * 1024;
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
+const MAX_REDIRECTS = 5;
 
 function assertHttpsUrl(value, label) {
   let parsed;
@@ -52,22 +54,52 @@ export async function downloadBytes(
     timeoutMs = 120_000,
   } = {},
 ) {
-  assertHttpsUrl(url, 'source URL');
+  let currentUrl = assertHttpsUrl(url, 'source URL').toString();
   if (typeof fetchImpl !== 'function') throw new Error('no fetch implementation is available');
-  let response;
-  try {
-    response = await fetchImpl(url, {
-      redirect: 'follow',
-      signal: AbortSignal.timeout(timeoutMs),
-    });
-  } catch (error) {
-    throw new Error(`failed to download ${url}: ${error.message}`);
+  const signal = AbortSignal.timeout(timeoutMs);
+  for (let redirectCount = 0; ; redirectCount += 1) {
+    let response;
+    try {
+      response = await fetchImpl(currentUrl, {
+        // Follow redirects manually so an HTTPS source can never downgrade to
+        // plain HTTP before the final response is checked.
+        redirect: 'manual',
+        signal,
+      });
+    } catch (error) {
+      throw new Error(`failed to download ${currentUrl}: ${error.message}`);
+    }
+
+    if (REDIRECT_STATUSES.has(response.status)) {
+      const location = response.headers?.get?.('location');
+      if (!location) {
+        throw new Error(`failed to download ${currentUrl}: redirect has no Location`);
+      }
+      if (redirectCount >= MAX_REDIRECTS) {
+        throw new Error(`failed to download ${url}: too many redirects`);
+      }
+      let nextUrl;
+      try {
+        nextUrl = new URL(location, currentUrl);
+      } catch {
+        throw new Error(`failed to download ${currentUrl}: invalid redirect Location`);
+      }
+      assertHttpsUrl(nextUrl.toString(), 'redirected source URL');
+      currentUrl = nextUrl.toString();
+      try {
+        await response.body?.cancel?.();
+      } catch {
+        // The redirect body is irrelevant; cancellation is best-effort.
+      }
+      continue;
+    }
+
+    if (!response.ok) {
+      throw new Error(`failed to download ${currentUrl}: HTTP ${response.status}`);
+    }
+    if (response.url) assertHttpsUrl(response.url, 'redirected source URL');
+    return readResponseBytes(response, maxBytes);
   }
-  if (!response.ok) {
-    throw new Error(`failed to download ${url}: HTTP ${response.status}`);
-  }
-  if (response.url) assertHttpsUrl(response.url, 'redirected source URL');
-  return readResponseBytes(response, maxBytes);
 }
 
 async function readBootstrapFile(bootstrapDir, bootstrapKey, expected) {

@@ -5,7 +5,10 @@ import { parseFamilyDescriptor } from './schema.mjs';
 
 export function compareVersions(left, right) {
   const split = (value) => {
-    const [main, prerelease = ''] = value.split('+')[0].split('-');
+    const withoutBuild = value.split('+')[0];
+    const dash = withoutBuild.indexOf('-');
+    const main = dash === -1 ? withoutBuild : withoutBuild.slice(0, dash);
+    const prerelease = dash === -1 ? '' : withoutBuild.slice(dash + 1);
     return {
       main: main.split('.').map(Number),
       prerelease: prerelease ? prerelease.split('.') : [],

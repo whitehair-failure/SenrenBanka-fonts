@@ -22,7 +22,8 @@ on:
         type: boolean
 
 concurrency:
-  group: font-catalog-release-${{ inputs.catalogVersion }}
+  # Serialize all catalog versions because family tags are reused across snapshots.
+  group: font-catalog-release
   cancel-in-progress: false
 
 permissions:
@@ -80,7 +81,9 @@ jobs:
           node scripts/build-catalog.mjs "${args[@]}"
 
       - name: Verify release artifacts
-        run: npm run release:verify -- --dir artifacts --catalog-version "${{ inputs.catalogVersion }}"
+        env:
+          CATALOG_VERSION: ${{ inputs.catalogVersion }}
+        run: npm run release:verify -- --dir artifacts --catalog-version "$CATALOG_VERSION"
 
       - name: Build catalog (second deterministic run)
         shell: bash
@@ -92,7 +95,9 @@ jobs:
           node scripts/build-catalog.mjs "${args[@]}"
 
       - name: Compare both build outputs byte-for-byte
-        run: npm run release:verify -- --dir artifacts --compare-dir artifacts-repro --catalog-version "${{ inputs.catalogVersion }}"
+        env:
+          CATALOG_VERSION: ${{ inputs.catalogVersion }}
+        run: npm run release:verify -- --dir artifacts --compare-dir artifacts-repro --catalog-version "$CATALOG_VERSION"
 
       - name: Print release plan without creating releases
         env:
@@ -137,7 +142,9 @@ jobs:
           path: artifacts
 
       - name: Re-verify downloaded artifacts
-        run: npm run release:verify -- --dir artifacts --catalog-version "${{ inputs.catalogVersion }}"
+        env:
+          CATALOG_VERSION: ${{ inputs.catalogVersion }}
+        run: npm run release:verify -- --dir artifacts --catalog-version "$CATALOG_VERSION"
 
       - name: Publish immutable family and catalog releases
         env:

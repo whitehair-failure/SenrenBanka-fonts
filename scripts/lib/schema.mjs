@@ -115,8 +115,14 @@ const licenseSchema = z
 
 const fixedVariantSchema = z
   .object({
-    sourceFile: fileNameSchema,
-    file: fileNameSchema,
+    sourceFile: fileNameSchema.refine(
+      (value) => /\.woff2$/i.test(value),
+      'must be a WOFF2 source file',
+    ),
+    file: fileNameSchema.refine(
+      (value) => /\.woff2$/i.test(value),
+      'must be a WOFF2 output file',
+    ),
     weight: z.string().regex(WEIGHT),
     style: z.enum(['normal', 'italic', 'oblique']),
     stretch: z.string().regex(STRETCH).optional(),
@@ -137,7 +143,10 @@ const fixedOutputSchema = z
 const coreOutputSchema = z
   .object({
     type: z.literal('core-cjk'),
-    sourceFile: fileNameSchema,
+    sourceFile: fileNameSchema.refine(
+      (value) => /\.(?:ttf|otf)$/i.test(value),
+      'must be an uncompressed TTF/OTF source file',
+    ),
     weight: z.string().regex(WEIGHT),
     style: z.enum(['normal', 'italic', 'oblique']),
     display: z.enum(['auto', 'block', 'swap', 'fallback', 'optional']),
@@ -286,9 +295,9 @@ export const familyDescriptorSchema = z
           message: 'renamed RFN requires core-cjk output.rename',
         });
       } else {
-        const replacement = descriptor.output.rename.to.toLocaleLowerCase();
+        const replacement = descriptor.output.rename.to.toLowerCase();
         const collision = descriptor.license.reservedFontNames.find((name) =>
-          replacement.includes(name.toLocaleLowerCase()),
+          replacement.includes(name.toLowerCase()),
         );
         if (collision) {
           context.addIssue({
@@ -326,7 +335,9 @@ const fontMetadataSchema = z
 
 const manifestVariantSchema = z
   .object({
-    file: relativePathSchema.startsWith('fonts/'),
+    file: relativePathSchema
+      .startsWith('fonts/')
+      .refine((value) => /\.woff2$/i.test(value), 'must be a WOFF2 output file'),
     sha256: sha256Schema,
     size: z.number().int().positive(),
     weight: z.string().regex(WEIGHT),
@@ -378,6 +389,10 @@ export const familyManifestSchema = z
     license: z
       .object({
         spdx: z.enum(['OFL-1.1', 'Apache-2.0', 'CC0-1.0']),
+        approvedForRedistribution: z.literal(true),
+        reviewedAt: dateSchema,
+        reviewedBy: z.string().min(1),
+        evidenceUrl: httpsUrlSchema,
         files: z
           .array(
             z
@@ -390,7 +405,7 @@ export const familyManifestSchema = z
           )
           .min(1),
         reservedFontNames: z.array(z.string().min(1)),
-        rfnStatus: rfnSchema.shape.status,
+        rfn: rfnSchema,
       })
       .strict(),
     css: z.literal('font.css'),
@@ -453,7 +468,11 @@ export const sourceManifestSchema = z
 
 const releaseAssetSchema = z
   .object({
-    releaseTag: z.string().regex(/^[a-z][a-z0-9-]*-v\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/),
+    releaseTag: z
+      .string()
+      .regex(
+        /^[a-z][a-z0-9-]*-v\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/,
+      ),
     fileName: fileNameSchema,
     sha256: sha256Schema,
     size: z.number().int().positive(),

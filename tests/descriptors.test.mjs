@@ -1,12 +1,21 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
-import { loadCurrentDescriptors } from '../scripts/lib/descriptors.mjs';
+import {
+  compareVersions,
+  loadCurrentDescriptors,
+} from '../scripts/lib/descriptors.mjs';
 import { loadAndVerifyLicenses } from '../scripts/lib/license.mjs';
+import { assertNoTrackedFontBinaries } from '../scripts/lib/validate.mjs';
 import { schemas } from '../scripts/lib/schema.mjs';
 import { stableStringify } from '../scripts/lib/json.mjs';
-import { repoRoot } from './helpers/fixtures.mjs';
+import {
+  hash,
+  makeCoreDescriptor,
+  repoRoot,
+} from './helpers/fixtures.mjs';
 
 test('initial catalog describes exactly the 20 local-provider families', async () => {
   const descriptors = await loadCurrentDescriptors(repoRoot);
@@ -22,6 +31,48 @@ test('initial catalog describes exactly the 20 local-provider families', async (
     assert.doesNotMatch(text, /F:\\\\|file:\/\//i);
     await loadAndVerifyLicenses(repoRoot, item.descriptor);
   }
+});
+
+test('semantic version ordering treats hyphens inside prerelease identifiers correctly', () => {
+  assert.ok(compareVersions('1.0.0-alpha-beta', '1.0.0-alpha-alpha') > 0);
+  assert.ok(compareVersions('1.0.0-beta', '1.0.0-alpha-beta') > 0);
+  assert.equal(compareVersions('1.0.0+build.2', '1.0.0+build.1'), 0);
+});
+
+test('binary tracking gate fails closed when Git cannot inspect the tree', async (t) => {
+  const root = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'font-git-gate-'));
+  t.after(() => fs.promises.rm(root, { recursive: true, force: true }));
+  assert.throws(
+    () => assertNoTrackedFontBinaries(root),
+    /Git is required for the binary gate/,
+  );
+});
+
+test('RFN permission evidence must be an excerpt of the reviewed license text', async (t) => {
+  const descriptor = makeCoreDescriptor();
+  const root = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'font-license-test-'));
+  t.after(() => fs.promises.rm(root, { recursive: true, force: true }));
+  const licenseText = Buffer.from(
+    'Copyright Fixture. This Font Software is licensed under the SIL Open Font License, Version 1.1. [ADDITIONAL PERMISSION] Fixture may be subsetted.',
+  );
+  const licenseDir = path.join(root, 'licenses', descriptor.id);
+  await fs.promises.mkdir(licenseDir, { recursive: true });
+  await fs.promises.writeFile(path.join(licenseDir, 'LICENSE.txt'), licenseText);
+  descriptor.license.files = [
+    { name: 'LICENSE.txt', sha256: hash(licenseText) },
+  ];
+  descriptor.license.reservedFontNames = ['Fixture'];
+  descriptor.license.rfn = {
+    status: 'permission-granted',
+    basis: 'Fixture explicitly permits web subsetting.',
+    permissionText:
+      '[ADDITIONAL PERMISSION] Fixture may be subsetted, with fabricated conditions.',
+    permissionEvidenceUrl: 'https://example.com/fixture-permission',
+  };
+  await assert.rejects(
+    () => loadAndVerifyLicenses(root, descriptor),
+    /exact excerpt/,
+  );
 });
 
 test('committed JSON schemas match the versioned Zod contracts', async () => {
@@ -50,4 +101,7 @@ test('workflow verifies and uploads before the publish job runs', async () => {
   assert.ok(upload < publishJob && publishJob < publishCommand);
   assert.match(workflow.slice(publishJob), /needs: build/);
   assert.match(workflow.slice(publishJob), /actions\/download-artifact@v4/);
+  assert.match(workflow, /^\s*group: font-catalog-release$/m);
+  assert.doesNotMatch(workflow, /^\s*run:.*\$\{\{\s*inputs\./m);
+  assert.match(workflow.slice(publishJob), /permissions:\s*\n\s+contents: write/);
 });

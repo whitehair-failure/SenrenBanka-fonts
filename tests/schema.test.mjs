@@ -32,6 +32,16 @@ test('license gate requires explicit manual approval', () => {
   assert.throws(() => parseFamilyDescriptor(descriptor), /approvedForRedistribution/);
 });
 
+test('fixed and core output file extensions are enforced by the schema', () => {
+  const fixed = makeFixedDescriptor();
+  fixed.output.variants[0].file = 'font.ttf';
+  assert.throws(() => parseFamilyDescriptor(fixed), /WOFF2 output file/);
+
+  const core = makeCoreDescriptor();
+  core.output.sourceFile = 'fixture-sans.woff2';
+  assert.throws(() => parseFamilyDescriptor(core), /TTF\/OTF source file/);
+});
+
 test('RFN-bearing modified output fails unless permission or rename is explicit', () => {
   const descriptor = makeCoreDescriptor();
   descriptor.license.reservedFontNames = ['Fixture'];
@@ -84,4 +94,19 @@ test('catalog schema rejects inconsistent release tags and file names', () => {
   const wrongUrl = structuredClone(base);
   wrongUrl.baseUrl = 'http://example.com/releases/download';
   assert.throws(() => catalogSchema.parse(wrongUrl), /HTTPS/);
+
+  const buildMetadata = structuredClone(base);
+  buildMetadata.families['fixture-fixed'].version = '1.0.0+build.1';
+  buildMetadata.families['fixture-fixed'].package.releaseTag =
+    'font-fixture-fixed-v1.0.0+build.1';
+  buildMetadata.families['fixture-fixed'].package.fileName =
+    'fixture-fixed-v1.0.0+build.1.tar.gz';
+  buildMetadata.families['fixture-fixed'].source.releaseTag =
+    'font-fixture-fixed-v1.0.0+build.1';
+  buildMetadata.families['fixture-fixed'].source.fileName =
+    'fixture-fixed-v1.0.0+build.1-source.tar.gz';
+  assert.equal(
+    parseCatalog(buildMetadata).families['fixture-fixed'].version,
+    '1.0.0+build.1',
+  );
 });

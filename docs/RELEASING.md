@@ -67,5 +67,7 @@ Catalog release:
 - `catalog.json.sha256`
 - `SHA256SUMS`
 
-Existing tags or releases are a hard failure. Assets are never retried with
-`--clobber`. Fix by increasing the family or catalog version.
+An existing catalog tag/release is a hard failure. An existing family tag is
+reused only after its published assets are verified byte-for-byte against the
+new catalog pointers. Assets are never overwritten with `--clobber`. Fix
+changed families by increasing their family version.

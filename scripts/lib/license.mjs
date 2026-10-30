@@ -35,28 +35,50 @@ export async function loadAndVerifyLicenses(repoRoot, descriptor) {
     throw new Error(`${descriptor.id} is missing manual license review evidence`);
   }
 
-  const lower = combined.toLocaleLowerCase();
+  const lower = combined.toLowerCase();
   if (descriptor.license.spdx === 'OFL-1.1' && !lower.includes('open font license')) {
     throw new Error(`${descriptor.id} declares OFL-1.1 but its license text is not OFL`);
   }
+  if (
+    descriptor.license.spdx === 'Apache-2.0' &&
+    !lower.includes('apache license') &&
+    !lower.includes('version 2.0')
+  ) {
+    throw new Error(
+      `${descriptor.id} declares Apache-2.0 but its license text is not Apache-2.0`,
+    );
+  }
+  if (
+    descriptor.license.spdx === 'CC0-1.0' &&
+    !lower.includes('cc0 1.0 universal') &&
+    !lower.includes('creative commons legal code')
+  ) {
+    throw new Error(`${descriptor.id} declares CC0-1.0 but its license text is not CC0`);
+  }
   for (const reservedName of descriptor.license.reservedFontNames) {
-    if (!lower.includes(reservedName.toLocaleLowerCase())) {
+    if (!lower.includes(reservedName.toLowerCase())) {
       throw new Error(
         `${descriptor.id} lists reserved name ${reservedName}, but the license text does not contain it`,
       );
     }
   }
   if (descriptor.license.rfn.status === 'permission-granted') {
-    const permissionText = descriptor.license.rfn.permissionText.toLocaleLowerCase();
+    const permissionText = descriptor.license.rfn.permissionText.toLowerCase();
     if (!permissionText.includes('permission') && !permissionText.includes('may')) {
       throw new Error(`${descriptor.id} RFN permission text does not describe permission`);
     }
     for (const reservedName of descriptor.license.reservedFontNames) {
-      if (!permissionText.includes(reservedName.toLocaleLowerCase())) {
+      if (!permissionText.includes(reservedName.toLowerCase())) {
         throw new Error(
           `${descriptor.id} RFN permission does not explicitly cover ${reservedName}`,
         );
       }
+    }
+    const compact = (value) => value.replace(/\s+/g, ' ').trim();
+    if (!compact(lower).includes(compact(permissionText))) {
+      throw new Error(
+        `${descriptor.id} RFN permission text is not an exact excerpt of the license evidence`,
+      );
     }
   }
   return files;

@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
+import { sha256 } from '../scripts/lib/hash.mjs';
 import { publishCatalog } from '../scripts/lib/publish.mjs';
 
 function catalogFixture() {
@@ -117,6 +120,129 @@ test('failed draft workflow removes drafts and never publishes a partial catalog
         call.args[2] === 'catalog-v1.0.0',
     ),
     false,
+  );
+});
+
+test('a failed release create cleans up a draft that was created before the error', async () => {
+  const calls = [];
+  const runner = {
+    async run(call) {
+      calls.push(call);
+      const args = call.args;
+      if (args[0] === 'api' && args[1]?.includes('immutable-releases')) {
+        return { status: 0, stdout: 'true\n', stderr: '' };
+      }
+      if (args[0] === 'api' && args[1]?.includes('/git/ref/tags/')) {
+        return { status: 1, stdout: '', stderr: 'HTTP 404: Not Found' };
+      }
+      if (args[0] === 'release' && args[1] === 'view') {
+        if (args.includes('isDraft')) {
+          return { status: 0, stdout: '{"isDraft":true}\n', stderr: '' };
+        }
+        return { status: 1, stdout: '', stderr: 'release not found' };
+      }
+      if (args[0] === 'release' && args[1] === 'create') {
+        return { status: 1, stdout: '', stderr: 'upload failed' };
+      }
+      return { status: 0, stdout: '', stderr: '' };
+    },
+  };
+  await assert.rejects(
+    () => publishCatalog({ ...baseOptions, run: runner.run }),
+    /failed to create draft release/,
+  );
+  assert.ok(
+    calls.some(
+      (call) =>
+        call.args[0] === 'release' &&
+        call.args[1] === 'delete' &&
+        call.args[2] === 'font-fixture-a-v1.0.0',
+    ),
+  );
+});
+
+test('an unchanged existing family release is reused while a new catalog tag is created', async (t) => {
+  const dir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'font-publish-'));
+  t.after(() => fs.promises.rm(dir, { recursive: true, force: true }));
+  const catalog = catalogFixture();
+  const familyFiles = [
+    catalog.families['fixture-a'].package.fileName,
+    `${catalog.families['fixture-a'].package.fileName}.sha256`,
+    catalog.families['fixture-a'].source.fileName,
+    `${catalog.families['fixture-a'].source.fileName}.sha256`,
+    'catalog.json',
+    'catalog.json.sha256',
+    'SHA256SUMS',
+  ];
+  const contents = new Map();
+  for (const fileName of familyFiles) {
+    const data = Buffer.from(`fixture:${fileName}\n`);
+    contents.set(fileName, data);
+    await fs.promises.writeFile(path.join(dir, fileName), data);
+  }
+
+  const calls = [];
+  const runner = {
+    async run(call) {
+      calls.push(call);
+      const args = call.args;
+      if (args[0] === 'api' && args[1]?.includes('immutable-releases')) {
+        return { status: 0, stdout: 'true\n', stderr: '' };
+      }
+      if (args[0] === 'api' && args[1]?.includes('font-fixture-a-v1.0.0')) {
+        return { status: 0, stdout: '', stderr: '' };
+      }
+      if (args[0] === 'api' && args[1]?.includes('catalog-v1.0.0')) {
+        return { status: 1, stdout: '', stderr: 'HTTP 404: Not Found' };
+      }
+      if (args[0] === 'release' && args[1] === 'view') {
+        if (args.includes('tagName,isDraft,assets')) {
+          return {
+            status: 0,
+            stdout: JSON.stringify({
+              tagName: 'font-fixture-a-v1.0.0',
+              isDraft: false,
+              assets: [...contents.entries()]
+                .filter(([name]) => name.startsWith('fixture-a-'))
+                .map(([name, data]) => ({
+                  name,
+                  size: data.length,
+                  digest: `sha256:${sha256(data)}`,
+                })),
+            }),
+            stderr: '',
+          };
+        }
+        return { status: 1, stdout: '', stderr: 'release not found' };
+      }
+      return { status: 0, stdout: '', stderr: '' };
+    },
+  };
+
+  const result = await publishCatalog({
+    ...baseOptions,
+    dir,
+    catalog,
+    run: runner.run,
+  });
+  assert.ok(result.releases.includes('font-fixture-a-v1.0.0'));
+  assert.equal(
+    calls.some(
+      (call) =>
+        call.args[0] === 'release' &&
+        call.args[1] === 'create' &&
+        call.args[2] === 'font-fixture-a-v1.0.0',
+    ),
+    false,
+  );
+  assert.equal(
+    calls.some(
+      (call) =>
+        call.args[0] === 'release' &&
+        call.args[1] === 'create' &&
+        call.args[2] === 'catalog-v1.0.0',
+    ),
+    true,
   );
 });
 

@@ -6,6 +6,7 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 import {
   createDeterministicTarGz,
+  DEFAULT_ARCHIVE_LIMITS,
   extractArchiveMember,
   extractZipAll,
   readTar,
@@ -103,12 +104,48 @@ test('tar reader rejects path traversal, links, and duplicate entries', () => {
   updateTarChecksum(linked.subarray(0, 512));
   assert.throws(() => readTar(linked, { strictDeterministic: true }), /non-regular entry/);
 
+  const hardlink = Buffer.from(archive);
+  hardlink[156] = '1'.charCodeAt(0);
+  updateTarChecksum(hardlink.subarray(0, 512));
+  assert.throws(
+    () => readTar(hardlink, { strictDeterministic: true }),
+    /non-regular entry/,
+  );
+
+  const absolute = Buffer.from(archive);
+  absolute.write('/one.txt', 0, 'utf8');
+  updateTarChecksum(absolute.subarray(0, 512));
+  assert.throws(
+    () => readTar(absolute, { strictDeterministic: true }),
+    /relative POSIX path/,
+  );
+
   const duplicate = Buffer.from(archive);
   const secondHeader = 512 + 512;
   duplicate.fill(0, secondHeader, secondHeader + 100);
   duplicate.write('one.txt', secondHeader, 'utf8');
   updateTarChecksum(duplicate.subarray(secondHeader, secondHeader + 512));
   assert.throws(() => readTar(duplicate, { strictDeterministic: true }), /duplicate entry/);
+});
+
+test('tar and ZIP readers enforce expansion resource limits', async () => {
+  const tar = createDeterministicTarGz([{ path: 'large.txt', data: '1234' }]);
+  assert.throws(
+    () =>
+      readTar(tar, {
+        limits: { ...DEFAULT_ARCHIVE_LIMITS, maxExpandedBytes: 3 },
+      }),
+    /expanded size limit|larger than 3 bytes/,
+  );
+
+  const zip = await fs.promises.readFile(path.join(fixtureRoot, 'fixtures.zip'));
+  await assert.rejects(
+    () =>
+      extractArchiveMember(zip, 'fonts/FixtureSans.ttf', {
+        limits: { ...DEFAULT_ARCHIVE_LIMITS, maxExpandedBytes: 3 },
+      }),
+    /expanded size limit/,
+  );
 });
 
 test('ZIP extraction validates exact members, path traversal, symlinks, and CRC', async () => {

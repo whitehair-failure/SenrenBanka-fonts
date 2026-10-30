@@ -60,6 +60,14 @@
         "license": {
           "additionalProperties": false,
           "properties": {
+            "approvedForRedistribution": {
+              "const": true,
+              "type": "boolean"
+            },
+            "evidenceUrl": {
+              "format": "uri",
+              "type": "string"
+            },
             "files": {
               "items": {
                 "additionalProperties": false,
@@ -104,14 +112,44 @@
               },
               "type": "array"
             },
-            "rfnStatus": {
-              "enum": [
-                "not-applicable",
-                "unmodified-distribution",
-                "permission-granted",
-                "renamed"
-              ],
+            "reviewedAt": {
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
               "type": "string"
+            },
+            "reviewedBy": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "rfn": {
+              "additionalProperties": false,
+              "properties": {
+                "basis": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "permissionEvidenceUrl": {
+                  "format": "uri",
+                  "type": "string"
+                },
+                "permissionText": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "status": {
+                  "enum": [
+                    "not-applicable",
+                    "unmodified-distribution",
+                    "permission-granted",
+                    "renamed"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "status",
+                "basis"
+              ],
+              "type": "object"
             },
             "spdx": {
               "enum": [
@@ -124,9 +162,13 @@
           },
           "required": [
             "spdx",
+            "approvedForRedistribution",
+            "reviewedAt",
+            "reviewedBy",
+            "evidenceUrl",
             "files",
             "reservedFontNames",
-            "rfnStatus"
+            "rfn"
           ],
           "type": "object"
         },

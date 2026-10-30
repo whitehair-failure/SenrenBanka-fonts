@@ -89,4 +89,12 @@ test('catalog verification rejects missing assets, hash drift, version drift, an
     () => verifyCatalogDirectory({ dir: extra, descriptors }),
     /extra: unexpected\.txt/,
   );
+
+  const extraDirectory = path.join(fixture.root, 'extra-directory');
+  await fs.promises.cp(outDir, extraDirectory, { recursive: true });
+  await fs.promises.mkdir(path.join(extraDirectory, 'nested'), { recursive: true });
+  await assert.rejects(
+    () => verifyCatalogDirectory({ dir: extraDirectory, descriptors }),
+    /non-regular entry/,
+  );
 });

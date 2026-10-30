@@ -60,13 +60,17 @@ export function buildFamilyManifest({
     },
     license: {
       spdx: descriptor.license.spdx,
+      approvedForRedistribution: descriptor.license.approvedForRedistribution,
+      reviewedAt: descriptor.license.reviewedAt,
+      reviewedBy: descriptor.license.reviewedBy,
+      evidenceUrl: descriptor.license.evidenceUrl,
       files: licenses.map((file) => ({
         file: `licenses/${file.name}`,
         sha256: file.sha256,
         size: file.data.length,
       })),
       reservedFontNames: descriptor.license.reservedFontNames,
-      rfnStatus: descriptor.license.rfn.status,
+      rfn: descriptor.license.rfn,
     },
     css: 'font.css',
     variants: variants.map((variant) => ({

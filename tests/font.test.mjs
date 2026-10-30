@@ -92,4 +92,15 @@ test('RFN rename changes user-facing names and preserves a valid sfnt checksum',
       }),
     /still contains a reserved name/,
   );
+
+  const cffSignature = Buffer.from(input);
+  cffSignature.writeUInt32BE(0x4f54544f, 0);
+  assert.throws(
+    () =>
+      renameSfntFont(cffSignature, {
+        reservedNames: ['Fixture'],
+        replacement: 'Derived',
+      }),
+    /CFF\/OTF/,
+  );
 });

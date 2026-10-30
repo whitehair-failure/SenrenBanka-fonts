@@ -205,6 +205,17 @@ export async function splitCjkFont({
         characters: visibleCharacterSet(inspection),
       });
     }
+    for (const shard of finalShards) {
+      for (const codePoint of shard.characters) {
+        if (!sourceCoverage.has(codePoint)) {
+          throw new Error(
+            `final shard ${shard.fileName} contains U+${codePoint
+              .toString(16)
+              .toUpperCase()} not present in the source`,
+          );
+        }
+      }
+    }
 
     const remainingGroups = new Map(
       subsets.map((subset) => [subset.join(','), subset]),

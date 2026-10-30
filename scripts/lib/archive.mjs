@@ -285,26 +285,37 @@ export async function extractZipMember(
   }
 
   const seen = new Set();
+  const portableSeen = new Map();
   let expanded = 0;
   let count = 0;
   let selected = null;
   for await (const entry of zipfile.eachEntry()) {
     count += 1;
     if (count > limits.maxEntries) throw new Error(`${label} has too many entries`);
-    const entryPath = entry.fileName;
-    if (entryPath.endsWith('/')) {
-      if (entry.uncompressedSize !== 0 || entry.fileName !== entryPath) {
+    const isDirectory = entry.fileName.endsWith('/');
+    const entryPath = isDirectory ? entry.fileName.slice(0, -1) : entry.fileName;
+    if (isDirectory) {
+      if (entry.uncompressedSize !== 0) {
         throw new Error(`${label} has an invalid directory entry`);
       }
-      assertSafeRelativePath(entryPath.slice(0, -1), 'ZIP directory');
-      continue;
+      assertSafeRelativePath(entryPath, 'ZIP directory');
+    } else {
+      assertSafeRelativePath(entryPath, 'ZIP entry');
     }
-    assertSafeRelativePath(entryPath, 'ZIP entry');
     if (seen.has(entryPath)) throw new Error(`${label} has a duplicate entry: ${entryPath}`);
     seen.add(entryPath);
+    const portable = entryPath.normalize('NFC').toLowerCase();
+    const collision = portableSeen.get(portable);
+    if (collision) {
+      throw new Error(
+        `${label} contains a case-insensitive path collision: ${collision}, ${entryPath}`,
+      );
+    }
+    portableSeen.set(portable, entryPath);
     if (zipEntryIsSymlink(entry)) {
       throw new Error(`${label} contains a symlink: ${entryPath}`);
     }
+    if (isDirectory) continue;
     expanded += entry.uncompressedSize;
     if (expanded > limits.maxExpandedBytes) {
       throw new Error(`${label} exceeds expanded size limit`);
@@ -371,8 +382,10 @@ export async function extractZipAll(
       }
       seen.add(entryPath);
       portableSeen.set(portable, entryPath);
+      if (zipEntryIsSymlink(entry)) {
+        throw new Error(`${label} contains a symlink: ${entryPath}`);
+      }
       if (isDirectory) continue;
-      if (zipEntryIsSymlink(entry)) throw new Error(`${label} contains a symlink`);
       expanded += entry.uncompressedSize;
       if (expanded > limits.maxExpandedBytes) {
         throw new Error(`${label} exceeds expanded size limit`);

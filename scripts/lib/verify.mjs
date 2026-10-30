@@ -46,6 +46,20 @@ function assertSameSet(actual, expected, label) {
   }
 }
 
+function mergeIntervals(intervals) {
+  const sorted = [...intervals].sort((left, right) => left.min - right.min || left.max - right.max);
+  const merged = [];
+  for (const interval of sorted) {
+    const previous = merged.at(-1);
+    if (!previous || interval.min > previous.max + 1) {
+      merged.push({ ...interval });
+    } else {
+      previous.max = Math.max(previous.max, interval.max);
+    }
+  }
+  return merged;
+}
+
 function verifyCanonicalJson(bytes, value, label) {
   const text = Buffer.isBuffer(bytes) ? bytes.toString('utf8') : bytes;
   const parsed = parseJson(text, label);
@@ -79,8 +93,24 @@ function assertDescriptorManifestCompatibility(manifest, descriptor) {
   if (manifest.license.spdx !== descriptor.license.spdx) {
     throw new Error('family manifest SPDX identifier does not match descriptor');
   }
-  if (manifest.license.rfnStatus !== descriptor.license.rfn.status) {
-    throw new Error('family manifest RFN status does not match descriptor');
+  for (const field of [
+    'approvedForRedistribution',
+    'reviewedAt',
+    'reviewedBy',
+    'evidenceUrl',
+  ]) {
+    if (manifest.license[field] !== descriptor.license[field]) {
+      throw new Error(`family manifest license ${field} does not match descriptor`);
+    }
+  }
+  if (
+    JSON.stringify(manifest.license.reservedFontNames) !==
+    JSON.stringify(descriptor.license.reservedFontNames)
+  ) {
+    throw new Error('family manifest reserved font names do not match descriptor');
+  }
+  if (stableStringify(manifest.license.rfn) !== stableStringify(descriptor.license.rfn)) {
+    throw new Error('family manifest RFN metadata does not match descriptor');
   }
   if (manifest.source.archiveFileName !== sourceArchiveFileName(descriptor.id, descriptor.version)) {
     throw new Error('family manifest source archive name does not match descriptor');
@@ -248,36 +278,49 @@ export function verifySourceArchiveBuffer(buffer, descriptor) {
     expectedSourcePaths(manifest),
     `${descriptor.id} source package`,
   );
+  const sourceManifestPaths = new Set(manifest.files.map((file) => file.file));
+  if (sourceManifestPaths.size !== manifest.files.length) {
+    throw new Error(`${descriptor.id} source manifest repeats a source file`);
+  }
+  const licenseManifestPaths = new Set(manifest.licenses.map((file) => file.file));
+  if (licenseManifestPaths.size !== manifest.licenses.length) {
+    throw new Error(`${descriptor.id} source manifest repeats a license file`);
+  }
   for (const file of [...manifest.files, ...manifest.licenses]) {
     const data = map.get(file.file);
     verifySha256(data, file.sha256, `${descriptor.id} ${file.file}`);
     if (data.length !== file.size) throw new Error(`${file.file} size mismatch`);
   }
   const descriptorSources = new Map(
-    descriptor.source.files.map((file) => [file.fileName, file]),
+    descriptor.source.files.map((file) => [`source/fonts/${file.fileName}`, file]),
   );
   for (const file of manifest.files) {
-    const name = path.posix.basename(file.file);
-    const expected = descriptorSources.get(name);
+    const expected = descriptorSources.get(file.file);
     if (!expected) throw new Error(`source archive contains undeclared file ${file.file}`);
     if (file.sha256 !== expected.sha256 || file.size !== expected.size) {
       throw new Error(`source archive ${file.file} does not match descriptor`);
     }
   }
-  if (manifest.files.length !== descriptorSources.size) {
-    throw new Error('source archive is missing a descriptor source file');
+  for (const filePath of descriptorSources.keys()) {
+    if (!sourceManifestPaths.has(filePath)) {
+      throw new Error(`source archive is missing a descriptor source file: ${filePath}`);
+    }
   }
   const descriptorLicenses = new Map(
-    descriptor.license.files.map((file) => [file.name, file.sha256]),
+    descriptor.license.files.map((file) => [
+      `source/licenses/${file.name}`,
+      file.sha256,
+    ]),
   );
   for (const file of manifest.licenses) {
-    const name = path.posix.basename(file.file);
-    if (descriptorLicenses.get(name) !== file.sha256) {
+    if (descriptorLicenses.get(file.file) !== file.sha256) {
       throw new Error(`source archive license ${file.file} does not match descriptor`);
     }
   }
-  if (manifest.licenses.length !== descriptorLicenses.size) {
-    throw new Error('source archive license count does not match descriptor');
+  for (const filePath of descriptorLicenses.keys()) {
+    if (!licenseManifestPaths.has(filePath)) {
+      throw new Error(`source archive is missing a descriptor license file: ${filePath}`);
+    }
   }
   return { manifest, entries: map };
 }
@@ -292,7 +335,7 @@ export function verifyFamilyPair(packageBuffer, sourceBuffer, descriptor) {
     ]),
   );
   for (const file of source.manifest.files) {
-    const name = path.posix.basename(file.file);
+    const name = file.file.slice('source/fonts/'.length);
     const expected = manifestSource.get(name);
     if (!expected || expected.sha256 !== file.sha256 || expected.size !== file.size) {
       throw new Error(`family manifest source pointer mismatch for ${name}`);
@@ -300,6 +343,49 @@ export function verifyFamilyPair(packageBuffer, sourceBuffer, descriptor) {
   }
   if (manifestSource.size !== source.manifest.files.length) {
     throw new Error('family manifest declares a source file absent from source archive');
+  }
+  if (descriptor.role === 'core-cjk') {
+    if (descriptor.output.type !== 'core-cjk') {
+      throw new Error(`${descriptor.id} has inconsistent core-cjk output metadata`);
+    }
+    const sourcePath = `source/fonts/${descriptor.output.sourceFile}`;
+    const sourceEntry = source.entries.get(sourcePath);
+    if (!sourceEntry) throw new Error(`source archive is missing core font ${sourcePath}`);
+    const sourceInspection = inspectFont(
+      sourceEntry,
+      `${descriptor.id} source coverage`,
+    );
+    const ranges = mergeIntervals(
+      family.manifest.variants.flatMap((variant) =>
+        parseUnicodeRanges(variant.unicodeRange),
+      ),
+    );
+    const missing = [...sourceInspection.characterSet].filter(
+      (codePoint) => !intervalContains(ranges, codePoint),
+    );
+    if (missing.length > 0) {
+      throw new Error(
+        `core shards do not cover source character U+${missing[0]
+          .toString(16)
+          .toUpperCase()}`,
+      );
+    }
+    for (const variant of family.manifest.variants) {
+      const shardData = family.entries.get(variant.file);
+      const shardInspection = inspectFont(
+        shardData,
+        `${descriptor.id} ${variant.file} source coverage`,
+      );
+      for (const codePoint of shardInspection.characterSet) {
+        if (!sourceInspection.characterSet.has(codePoint)) {
+          throw new Error(
+            `${variant.file} contains U+${codePoint
+              .toString(16)
+              .toUpperCase()} not present in the source`,
+          );
+        }
+      }
+    }
   }
   return { family, source };
 }
@@ -374,7 +460,11 @@ export async function verifyCatalogDirectory({ dir, descriptors }) {
   }
 
   const entries = await fs.promises.readdir(dir, { withFileTypes: true });
-  const actualFiles = new Set(entries.filter((entry) => entry.isFile()).map((entry) => entry.name));
+  const nonFile = entries.find((entry) => !entry.isFile());
+  if (nonFile) {
+    throw new Error(`release directory contains a non-regular entry: ${nonFile.name}`);
+  }
+  const actualFiles = new Set(entries.map((entry) => entry.name));
   assertSameSet(actualFiles, expectedFiles, 'release directory');
 
   const catalogSidecar = await fs.promises.readFile(
@@ -398,8 +488,16 @@ export async function verifyCatalogDirectory({ dir, descriptors }) {
 }
 
 export async function compareCatalogDirectories(left, right) {
-  const leftFiles = (await fs.promises.readdir(left)).sort();
-  const rightFiles = (await fs.promises.readdir(right)).sort();
+  const readFiles = async (directory) => {
+    const entries = await fs.promises.readdir(directory, { withFileTypes: true });
+    const nonFile = entries.find((entry) => !entry.isFile());
+    if (nonFile) {
+      throw new Error(`reproducibility directory contains a non-regular entry: ${nonFile.name}`);
+    }
+    return entries.map((entry) => entry.name).sort();
+  };
+  const leftFiles = await readFiles(left);
+  const rightFiles = await readFiles(right);
   if (JSON.stringify(leftFiles) !== JSON.stringify(rightFiles)) {
     throw new Error('reproducibility check found a different artifact set');
   }

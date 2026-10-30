@@ -28,11 +28,13 @@ Supported strategies:
 | `renamed` | Core output renames every primary user-facing name before splitting |
 
 `permission-granted` requires both a permission text and an evidence URL. The
-permission text must mention every declared RFN.
+permission text must be an exact excerpt of the reviewed license text (after
+whitespace normalization) and must mention every declared RFN.
 
 `renamed` requires `output.rename.to`. The replacement is checked against all
 reserved names before and after binary name-table rewriting. A CSS-only alias is
-not sufficient.
+not sufficient. Rename currently supports TrueType TTF sources only; CFF/OTF
+renaming fails closed because CFF name strings are not rewritten by the tool.
 
 ## Web Subsets
 

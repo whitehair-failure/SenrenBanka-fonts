@@ -23,7 +23,7 @@
                 "type": "string"
               },
               "releaseTag": {
-                "pattern": "^[a-z][a-z0-9-]*-v\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?$",
+                "pattern": "^[a-z][a-z0-9-]*-v\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$",
                 "type": "string"
               },
               "sha256": {
@@ -59,7 +59,7 @@
                 "type": "string"
               },
               "releaseTag": {
-                "pattern": "^[a-z][a-z0-9-]*-v\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?$",
+                "pattern": "^[a-z][a-z0-9-]*-v\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$",
                 "type": "string"
               },
               "sha256": {

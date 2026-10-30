@@ -336,9 +336,8 @@ function encodeNameRecord(text, platformId) {
 }
 
 /**
- * Rename the user-facing name table of a TrueType/OpenType font. CFF-internal
- * names are not touched, but OFL's primary-name condition is enforced through
- * every name table field presented by browsers and font inspectors.
+ * Rename the user-facing name table of a TrueType font. CFF/OTF sources fail
+ * closed because their internal name strings cannot be rewritten here.
  */
 export function renameSfntFont(data, { reservedNames, replacement }) {
   if (!Array.isArray(reservedNames) || reservedNames.length === 0) {
@@ -346,14 +345,16 @@ export function renameSfntFont(data, { reservedNames, replacement }) {
   }
   if (
     reservedNames.some((name) =>
-      replacement.toLocaleLowerCase().includes(name.toLocaleLowerCase()),
+      replacement.toLowerCase().includes(name.toLowerCase()),
     )
   ) {
     throw new Error('RFN replacement still contains a reserved name');
   }
   const signature = data.subarray(0, 4);
-  if (![0x00010000, 0x4f54544f].includes(signature.readUInt32BE(0))) {
-    throw new Error('RFN rename currently requires an uncompressed TTF/OTF source');
+  if (signature.readUInt32BE(0) !== 0x00010000) {
+    throw new Error(
+      'RFN rename currently supports TrueType TTF sources only; CFF/OTF name rewriting is not implemented',
+    );
   }
   const numTables = data.readUInt16BE(4);
   const records = [];
@@ -396,7 +397,7 @@ export function renameSfntFont(data, { reservedNames, replacement }) {
       for (const reserved of reservedNames) {
         renamed = renamed.replace(
           new RegExp(reserved.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'),
-          replacement,
+          () => replacement,
         );
       }
       entry.data = encodeNameRecord(renamed, platformId);
@@ -461,7 +462,7 @@ export function renameSfntFont(data, { reservedNames, replacement }) {
     ]
       .filter(Boolean)
       .join(' ');
-    if (primaryNames.toLocaleLowerCase().includes(reserved.toLocaleLowerCase())) {
+    if (primaryNames.toLowerCase().includes(reserved.toLowerCase())) {
       throw new Error(`RFN rename left reserved name ${reserved} in the primary font names`);
     }
   }

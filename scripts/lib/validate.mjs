@@ -9,7 +9,7 @@ const FORBIDDEN_BINARY =
 function assertNoMachinePaths(value, label) {
   const text = JSON.stringify(value);
   const patterns = [
-    /[A-Za-z]:\\\\/,
+    /(?:^|[^A-Za-z0-9+.-])[A-Za-z]:[\\/]/,
     /file:\/\//i,
     /\/Users\//,
     /\/home\/[^/]+\//,
@@ -36,8 +36,13 @@ function assertPolicy(descriptor) {
     }
   } else {
     for (const source of descriptor.source.files) {
-      if (!source.fileName.endsWith('.woff2')) {
+      if (!/\.woff2$/i.test(source.fileName)) {
         throw new Error(`${descriptor.id} fixed sources must be WOFF2 files`);
+      }
+    }
+    for (const variant of descriptor.output.variants) {
+      if (!/\.woff2$/i.test(variant.file)) {
+        throw new Error(`${descriptor.id} fixed outputs must be WOFF2 files`);
       }
     }
   }
@@ -56,8 +61,10 @@ export function assertNoTrackedFontBinaries(repoRoot) {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
     });
-  } catch {
-    return [];
+  } catch (error) {
+    throw new Error(
+      `could not inspect tracked files; Git is required for the binary gate: ${error.message}`,
+    );
   }
   const tracked = output.split('\0').filter(Boolean);
   const violations = tracked.filter(

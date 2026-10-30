@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import path from 'node:path';
 
 const WINDOWS_DRIVE = /^[A-Za-z]:/;
@@ -52,13 +53,23 @@ export function assertReplaceableDirectory(
 ) {
   const target = path.resolve(value);
   const root = path.resolve(protectedRoot);
-  const { root: filesystemRoot } = path.parse(target);
+  const relativeRoot = path.relative(target, root);
   if (
-    target === filesystemRoot ||
-    target === root ||
-    root.startsWith(`${target}${path.sep}`)
+    relativeRoot === '' ||
+    target === path.parse(target).root ||
+    (!relativeRoot.startsWith(`..${path.sep}`) &&
+      relativeRoot !== '..' &&
+      !path.isAbsolute(relativeRoot))
   ) {
     throw new Error(`refusing to replace unsafe ${label}: ${target}`);
+  }
+  try {
+    const stat = fs.lstatSync(target);
+    if (!stat.isDirectory() || stat.isSymbolicLink()) {
+      throw new Error(`refusing to replace non-directory ${label}: ${target}`);
+    }
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
   }
   return target;
 }
