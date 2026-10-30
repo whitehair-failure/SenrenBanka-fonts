@@ -29,6 +29,11 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  # Admin-verified repository variable; the Actions token may not be able to
+  # read the admin-only Immutable Releases API endpoint.
+  IMMUTABLE_RELEASES_CONFIRMED: ${{ vars.IMMUTABLE_RELEASES_CONFIRMED }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -37,6 +42,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Require administrator confirmation of immutable releases
+        run: |
+          if [[ "$IMMUTABLE_RELEASES_CONFIRMED" != "true" ]]; then
+            echo "Set repository variable IMMUTABLE_RELEASES_CONFIRMED=true only after an administrator has verified Immutable Releases is enabled." >&2
+            exit 1
+          fi
 
       - name: Set up Node.js
         uses: actions/setup-node@v4

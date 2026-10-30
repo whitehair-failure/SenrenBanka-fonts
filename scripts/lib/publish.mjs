@@ -96,6 +96,7 @@ export async function publishCatalog({
   catalog,
   run,
   dryRun = false,
+  immutableReleasesConfirmed = false,
   log = () => {},
 }) {
   if (!/^[^/]+\/[^/]+$/.test(repo)) throw new Error('repo must be owner/name');
@@ -109,6 +110,7 @@ export async function publishCatalog({
   }
 
   const releases = [];
+  const administratorConfirmed = immutableReleasesConfirmed === true;
   const catalogFiles = [
     path.join(dir, 'catalog.json'),
     path.join(dir, 'catalog.json.sha256'),
@@ -167,8 +169,24 @@ export async function publishCatalog({
     '--jq',
     '.enabled',
   ]);
-  if (!dryRun && immutable.stdout.trim() !== 'true') {
-    throw new Error('GitHub Immutable Releases must be enabled before publishing');
+  if (!dryRun) {
+    const immutableValue = (immutable.stdout ?? '').trim();
+    if (immutableValue === 'true') {
+      log('GitHub Immutable Releases confirmed by API');
+    } else if (immutableValue === 'false') {
+      throw new Error(
+        'GitHub Immutable Releases is disabled; repository confirmation cannot override the API',
+      );
+    } else if (!administratorConfirmed) {
+      throw new Error(
+        'could not confirm GitHub Immutable Releases: the API is inaccessible to this token. ' +
+          'An administrator must verify the setting and set IMMUTABLE_RELEASES_CONFIRMED=true',
+      );
+    } else {
+      log(
+        'GitHub Immutable Releases API is inaccessible; using administrator-confirmed repository variable',
+      );
+    }
   }
 
   const catalogRelease = releases.at(-1);

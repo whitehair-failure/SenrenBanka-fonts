@@ -44,6 +44,10 @@ async function main() {
         default: process.env.GITHUB_SHA,
       },
       'dry-run': { type: 'boolean', default: false },
+      'immutable-releases-confirmed': {
+        type: 'boolean',
+        default: process.env.IMMUTABLE_RELEASES_CONFIRMED === 'true',
+      },
     },
   });
   if (!values['catalog-version']) throw new Error('--catalog-version is required');
@@ -61,6 +65,7 @@ async function main() {
     catalog,
     run: runCommand,
     dryRun: values['dry-run'],
+    immutableReleasesConfirmed: values['immutable-releases-confirmed'],
     log(message) {
       process.stderr.write(`[publish] ${message}\n`);
     },

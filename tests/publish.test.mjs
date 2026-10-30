@@ -42,7 +42,10 @@ function bootstrapReleaseFixture() {
   };
 }
 
-function successfulRunner({ failEdit = false } = {}) {
+function successfulRunner({
+  failEdit = false,
+  immutableResult = { status: 0, stdout: 'true\n', stderr: '' },
+} = {}) {
   const calls = [];
   return {
     calls,
@@ -50,7 +53,7 @@ function successfulRunner({ failEdit = false } = {}) {
       calls.push(call);
       const args = call.args;
       if (args[0] === 'api' && args[1]?.includes('immutable-releases')) {
-        return { status: 0, stdout: 'true\n', stderr: '' };
+        return immutableResult;
       }
       if (args[0] === 'api' && args[1]?.includes('/git/ref/tags/')) {
         return { status: 1, stdout: '', stderr: 'HTTP 404: Not Found' };
@@ -109,6 +112,85 @@ test('publishing aborts when Immutable Releases is disabled', async () => {
   assert.equal(
     calls.some((call) => call.args[0] === 'release' && call.args[1] === 'create'),
     false,
+  );
+});
+
+test('an inaccessible immutable-release API fails without administrator confirmation', async () => {
+  const runner = successfulRunner({
+    immutableResult: {
+      status: 1,
+      stdout: '',
+      stderr: 'HTTP 403: Resource not accessible by integration',
+    },
+  });
+  await assert.rejects(
+    () => publishCatalog({ ...baseOptions, run: runner.run }),
+    /could not confirm GitHub Immutable Releases/,
+  );
+  assert.equal(
+    runner.calls.some(
+      (call) => call.args[0] === 'release' && call.args[1] === 'create',
+    ),
+    false,
+  );
+});
+
+test('an inaccessible immutable-release API passes with administrator confirmation', async () => {
+  const runner = successfulRunner({
+    immutableResult: {
+      status: 1,
+      stdout: '',
+      stderr: 'HTTP 403: Resource not accessible by integration',
+    },
+  });
+  const result = await publishCatalog({
+    ...baseOptions,
+    run: runner.run,
+    immutableReleasesConfirmed: true,
+  });
+  assert.equal(result.releases.at(-1), 'catalog-v1.0.0');
+  assert.ok(
+    runner.calls.some(
+      (call) => call.args[0] === 'release' && call.args[1] === 'create',
+    ),
+  );
+});
+
+test('false or missing administrator confirmation fails when the API is inaccessible', async () => {
+  for (const immutableReleasesConfirmed of [undefined, false]) {
+    const runner = successfulRunner({
+      immutableResult: {
+        status: 1,
+        stdout: '',
+        stderr: 'HTTP 403: Resource not accessible by integration',
+      },
+    });
+    await assert.rejects(
+      () =>
+        publishCatalog({
+          ...baseOptions,
+          run: runner.run,
+          ...(immutableReleasesConfirmed === undefined
+            ? {}
+            : { immutableReleasesConfirmed }),
+        }),
+      /IMMUTABLE_RELEASES_CONFIRMED=true/,
+    );
+  }
+});
+
+test('administrator confirmation cannot override an API-reported disabled setting', async () => {
+  const runner = successfulRunner({
+    immutableResult: { status: 0, stdout: 'false\n', stderr: '' },
+  });
+  await assert.rejects(
+    () =>
+      publishCatalog({
+        ...baseOptions,
+        run: runner.run,
+        immutableReleasesConfirmed: true,
+      }),
+    /cannot override the API/,
   );
 });
 

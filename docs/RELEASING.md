@@ -11,6 +11,30 @@
 The publish script checks the GitHub Immutable Releases API and refuses to run
 when it is disabled.
 
+### Actions Token Confirmation
+
+The admin-only GitHub Immutable Releases API may return `403` for the default
+Actions `GITHUB_TOKEN`. An administrator must verify in repository settings that
+**Immutable Releases** is enabled and then create the Actions repository
+variable `IMMUTABLE_RELEASES_CONFIRMED` with the exact value `true`.
+
+The workflow fails unless that variable is exactly `true`. It always attempts
+the API check first:
+
+- API `true` passes;
+- API `false` fails and cannot be overridden;
+- an inaccessible API fails unless the repository variable is exactly `true`.
+
+For local publishing with user authentication, the API check normally succeeds
+without the variable. If a locally authenticated token also lacks access, run:
+
+```bash
+IMMUTABLE_RELEASES_CONFIRMED=true npm run release:publish -- \
+  --dir artifacts --catalog-version 1.0.0 --target-sha "$(git rev-parse HEAD)"
+```
+
+The equivalent explicit flag is `--immutable-releases-confirmed`.
+
 ## Build And Verify
 
 ```bash
@@ -46,9 +70,10 @@ The workflow:
 3. builds and verifies twice;
 4. uploads the artifact set, including the bootstrap bundle;
 5. re-verifies the downloaded artifact in the write-enabled publish job;
-6. creates all family releases as drafts with their package/source checksums;
+6. creates bootstrap and family releases as drafts with checksums;
 7. creates the catalog release draft, including the bootstrap bundle;
-8. publishes family releases first and `catalog-v<version>` last.
+8. publishes `bootstrap-v<version>`, then family releases, then
+   `catalog-v<version>` last.
 
 The catalog is the consumer-visible transaction boundary. If publishing fails
 after some family releases are public, the previous catalog remains in place;

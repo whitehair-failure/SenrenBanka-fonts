@@ -117,4 +117,15 @@ test('workflow verifies and uploads before the publish job runs', async () => {
   assert.match(workflow, /--sha256 "\$BOOTSTRAP_SHA256"/);
   assert.match(workflow, /Bootstrap sidecar does not match the workflow input hash/);
   assert.doesNotMatch(workflow, /[A-Za-z]:[\\/]/);
+  assert.match(
+    workflow,
+    /IMMUTABLE_RELEASES_CONFIRMED:\s*\$\{\{\s*vars\.IMMUTABLE_RELEASES_CONFIRMED\s*\}\}/,
+  );
+  assert.match(
+    workflow,
+    /"\$IMMUTABLE_RELEASES_CONFIRMED"\s*!=\s*"true"/,
+  );
+  assert.ok(
+    workflow.indexOf('Require administrator confirmation') < testIndex,
+  );
 });
