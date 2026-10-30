@@ -11,7 +11,7 @@ import { sha256File } from './hash.mjs';
 function ghFailureIsMissing(result) {
   if (result.status === 0) return false;
   const text = `${result.stderr ?? ''}\n${result.stdout ?? ''}`;
-  return /HTTP 404|Not Found|release not found/i.test(text);
+  return /HTTP 404|Not Found/i.test(text);
 }
 
 function releaseNotes(catalogVersion, assets) {
@@ -41,8 +41,7 @@ function normalizeDigest(value) {
   return match ? match[1].toLowerCase() : null;
 }
 
-function decodeRelease(result, label) {
-  const raw = parseGhJson(result, label);
+function decodeReleaseObject(raw, label) {
   if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
     throw new Error(`${label} returned an invalid release object`);
   }
@@ -82,6 +81,10 @@ function decodeRelease(result, label) {
     isDraft: raw.draft,
     assets,
   };
+}
+
+function decodeRelease(result, label) {
+  return decodeReleaseObject(parseGhJson(result, label), label);
 }
 
 function assetsByName(release) {
@@ -295,16 +298,53 @@ export async function publishCatalog({
     calls.push(call);
     return run(call);
   };
-  const releaseApi = (method, suffix) =>
-    record('gh', ['api', '--method', method, `repos/${repo}/releases${suffix}`]);
-
-  async function fetchRelease(tag) {
-    const result = await releaseApi('GET', `/tags/${encodeURIComponent(tag)}`);
-    if (result.status === 0) {
-      return decodeRelease(result, `release ${tag}`);
+  async function fetchReleases() {
+    const result = await record('gh', [
+      'api',
+      '--method',
+      'GET',
+      '--paginate',
+      '--jq',
+      '.[] | {id, tag_name, draft, assets: [.assets[] | {name, size, digest}]}',
+      `repos/${repo}/releases?per_page=100`,
+    ]);
+    if (result.status !== 0) {
+      throw new Error('could not list releases from GitHub');
     }
-    if (ghFailureIsMissing(result)) return null;
-    throw new Error(`could not determine remote state for ${tag}`);
+
+    const releases = new Map();
+    const lines = String(result.stdout ?? '')
+      .split(/\r?\n/)
+      .filter((line) => line.trim().length > 0);
+    for (const [index, line] of lines.entries()) {
+      let raw;
+      try {
+        raw = JSON.parse(line);
+      } catch {
+        throw new Error(`could not parse release list item ${index + 1} from gh output`);
+      }
+      const release = decodeReleaseObject(raw, `release list item ${index + 1}`);
+      if (releases.has(release.tagName)) {
+        throw new Error(`GitHub returned multiple releases for tag ${release.tagName}`);
+      }
+      releases.set(release.tagName, release);
+    }
+    return releases;
+  }
+
+  async function assertTagAbsent(tag) {
+    const result = await record('gh', [
+      'api',
+      '--method',
+      'GET',
+      `repos/${repo}/git/ref/tags/${encodeURIComponent(tag)}`,
+    ]);
+    if (result.status === 0) {
+      throw new Error(`tag already exists without a release: ${tag}`);
+    }
+    if (!ghFailureIsMissing(result)) {
+      throw new Error(`could not determine tag state for ${tag}`);
+    }
   }
 
   async function createEmptyDraft(spec) {
@@ -367,9 +407,12 @@ export async function publishCatalog({
 
   // Inspect every release before creating or uploading anything. A conflict in
   // any existing release therefore fails before this run mutates remote state.
+  // GitHub's get-release-by-tag endpoint excludes drafts, so list releases and
+  // index by tag to make interrupted drafts discoverable.
+  const remoteReleases = await fetchReleases();
   for (const spec of specs) {
     log(`inspect ${spec.tag}`);
-    const release = await fetchRelease(spec.tag);
+    const release = remoteReleases.get(spec.tag) ?? null;
     if (release === null) {
       pending.push({ spec, release: null, missing: spec.assets.map((asset) => asset.fileName) });
     } else if (release.isDraft) {
@@ -378,6 +421,10 @@ export async function publishCatalog({
       verifyRelease(release, spec, false);
       reusedPublished.push(spec.tag);
     }
+  }
+
+  for (const item of pending) {
+    if (item.release === null) await assertTagAbsent(item.spec.tag);
   }
 
   for (const item of pending) {
@@ -395,9 +442,10 @@ export async function publishCatalog({
   }
 
   const verifiedDrafts = [];
+  const refreshedReleases = pending.length > 0 ? await fetchReleases() : remoteReleases;
   for (const item of pending) {
     log(`verify draft ${item.spec.tag}`);
-    const release = await fetchRelease(item.spec.tag);
+    const release = refreshedReleases.get(item.spec.tag) ?? null;
     if (release === null) {
       throw new Error(`draft release disappeared during publish: ${item.spec.tag}`);
     }

@@ -14,10 +14,11 @@ not require a personal access token or an administrator credential.
 
 ## Publish Transaction
 
-For each expected release, the script fetches the release by tag from the
-GitHub API:
+For each expected release, the script lists releases through the GitHub API
+(including Drafts visible to the write-enabled token) and indexes them by tag:
 
-1. Missing release: create an empty Draft with the verified target commit.
+1. Missing release: reject an existing Git tag without a Release; otherwise
+   create an empty Draft with the verified target commit.
 2. Existing Draft: reuse it, reject any extra or byte-conflicting asset, and
    upload only expected assets that are absent.
 3. Existing published Release: reuse it only when the tag, published state,

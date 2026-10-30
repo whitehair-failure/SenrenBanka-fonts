@@ -124,6 +124,7 @@ function apiMethod(call) {
 
 function createRemote({ before, after } = {}) {
   const releases = new Map();
+  const tags = new Set();
   const calls = [];
   const publishOrder = [];
   let nextId = 1;
@@ -148,6 +149,9 @@ function createRemote({ before, after } = {}) {
         await this.addAsset(tag, asset);
       }
       return release;
+    },
+    seedTag(tag) {
+      tags.add(tag);
     },
     async addAsset(tag, { name, file, size, digest, state = 'uploaded' }) {
       const release = releases.get(tag);
@@ -177,11 +181,21 @@ function createRemote({ before, after } = {}) {
       if (call.args[0] === 'api') {
         const method = apiMethod(call);
         const endpoint = call.args.find((arg) => arg.startsWith('repos/'));
-        if (method === 'GET' && endpoint?.includes('/releases/tags/')) {
+        if (method === 'GET' && /\/releases(?:\?|$)/.test(endpoint ?? '')) {
+          const lines = [...releases.values()]
+            .map((release) => JSON.stringify(snapshot(release)))
+            .join('\n');
+          result = ok(lines ? `${lines}\n` : '');
+        } else if (method === 'GET' && endpoint?.includes('/releases/tags/')) {
           const tag = endpointReleaseTag(call.args);
           const release = releases.get(tag);
-          result = release
+          result = release && !release.draft
             ? ok(snapshot(release))
+            : failure('gh: Not Found (HTTP 404)');
+        } else if (method === 'GET' && endpoint?.includes('/git/ref/tags/')) {
+          const tag = endpoint.slice(endpoint.lastIndexOf('/') + 1);
+          result = tags.has(decodeURIComponent(tag))
+            ? ok({ ref: `refs/tags/${decodeURIComponent(tag)}` })
             : failure('gh: Not Found (HTTP 404)');
         } else if (method === 'POST' && endpoint?.endsWith('/releases')) {
           const tag = fieldValue(call.args, 'tag_name');
@@ -262,7 +276,9 @@ function assertNoForbiddenCalls(calls) {
       false,
     );
     assert.equal(call.args.some((arg) => String(arg).includes('immutable-releases')), false);
-    assert.equal(call.args.some((arg) => String(arg).includes('/git/ref/tags/')), false);
+    if (call.args.some((arg) => String(arg).includes('/git/ref/tags/'))) {
+      assert.equal(apiMethod(call), 'GET');
+    }
   }
 }
 
@@ -270,6 +286,14 @@ function uploadCalls(calls) {
   return calls
     .filter((call) => call.args[0] === 'release' && call.args[1] === 'upload')
     .map((call) => ({ tag: call.args[2], fileName: path.basename(call.args[3]) }));
+}
+
+function listCalls(calls) {
+  return calls.filter(
+    (call) =>
+      apiMethod(call) === 'GET' &&
+      call.args.some((arg) => /\/releases\?per_page=100$/.test(arg)),
+  );
 }
 
 function createCalls(calls) {
@@ -321,14 +345,13 @@ test('publishes empty drafts, uploads expected assets, verifies remotely, and pu
     assert.ok(call.args.includes('draft=true'));
     assert.equal(call.args.some((arg) => artifact.files.has(arg)), false);
   }
-  for (const tag of expectedOrder) {
-    assert.equal(
-      remote.calls.filter(
-        (call) => apiMethod(call) === 'GET' && endpointReleaseTag(call.args) === tag,
-      ).length,
-      2,
-    );
-  }
+  assert.equal(listCalls(remote.calls).length, 2);
+  assert.equal(
+    remote.calls.some(
+      (call) => apiMethod(call) === 'GET' && endpointReleaseTag(call.args) !== null,
+    ),
+    false,
+  );
 });
 
 test('resumes a draft, skips matching assets, and uploads only missing assets', async (t) => {
@@ -347,6 +370,7 @@ test('resumes a draft, skips matching assets, and uploads only missing assets', 
   assert.deepEqual(createCalls(remote.calls), [CATALOG_TAG]);
   assert.deepEqual(result.published, [FAMILY_TAG, CATALOG_TAG]);
   assert.deepEqual(remote.publishOrder, [FAMILY_TAG, CATALOG_TAG]);
+  assert.equal(listCalls(remote.calls).length, 2);
   assert.deepEqual(
     uploadCalls(remote.calls)
       .filter((call) => call.tag === FAMILY_TAG)
@@ -453,6 +477,21 @@ test('rejects a conflicting published release without uploading or publishing', 
   assertNoForbiddenCalls(remote.calls);
 });
 
+test('rejects a pre-existing tag without a release before any mutation', async (t) => {
+  const artifact = await createArtifactSet(t);
+  const remote = createRemote();
+  remote.seedTag(FAMILY_TAG);
+
+  await assert.rejects(
+    () => publishCatalog(baseOptions(artifact, remote.run)),
+    /tag already exists without a release/,
+  );
+
+  assert.deepEqual(mutationCalls(remote.calls), []);
+  assert.deepEqual(remote.publishOrder, []);
+  assertNoForbiddenCalls(remote.calls);
+});
+
 test('a fully published catalog is a read-only verification when remote bytes match', async (t) => {
   const artifact = await createArtifactSet(t, { bootstrap: true });
   const remote = createRemote();
@@ -479,6 +518,7 @@ test('a fully published catalog is a read-only verification when remote bytes ma
 
   assert.deepEqual(result.published, []);
   assert.deepEqual(result.reusedPublished, [BOOTSTRAP_TAG, FAMILY_TAG, CATALOG_TAG]);
+  assert.equal(listCalls(remote.calls).length, 1);
   assert.deepEqual(mutationCalls(remote.calls), []);
   assertNoForbiddenCalls(remote.calls);
 });
@@ -487,7 +527,10 @@ test('remote verification failure leaves created drafts unpublished and undelete
   const artifact = await createArtifactSet(t);
   const remote = createRemote({
     before(call, state) {
-      if (apiMethod(call) === 'GET' && endpointReleaseTag(call.args) === FAMILY_TAG) {
+      if (
+        apiMethod(call) === 'GET' &&
+        call.args.some((arg) => /\/releases\?per_page=100$/.test(arg))
+      ) {
         const release = state.releaseFor(FAMILY_TAG);
         if (release?.assets.length === 4) {
           release.assets[0].digest = `sha256:${'c'.repeat(64)}`;
@@ -538,6 +581,79 @@ test('upload failure leaves drafts available for an idempotent retry', async (t)
   assertNoForbiddenCalls(remote.calls);
 });
 
+test('a draft created before a transport failure is reused rather than recreated', async (t) => {
+  const artifact = await createArtifactSet(t);
+  let failAfterCreate = true;
+  const remote = createRemote({
+    after(call) {
+      if (
+        failAfterCreate &&
+        apiMethod(call) === 'POST' &&
+        fieldValue(call.args, 'tag_name') === FAMILY_TAG
+      ) {
+        failAfterCreate = false;
+        return failure('connection lost after draft creation');
+      }
+      return undefined;
+    },
+  });
+
+  await assert.rejects(
+    () => publishCatalog(baseOptions(artifact, remote.run)),
+    /failed to create empty draft release/,
+  );
+  assert.equal(remote.releaseFor(FAMILY_TAG).draft, true);
+
+  const result = await publishCatalog(baseOptions(artifact, remote.run));
+  assert.deepEqual(result.published, [FAMILY_TAG, CATALOG_TAG]);
+  assert.equal(
+    createCalls(remote.calls).filter((tag) => tag === FAMILY_TAG).length,
+    1,
+  );
+  assertNoForbiddenCalls(remote.calls);
+});
+
+test('an upload committed before a transport failure is verified and skipped on retry', async (t) => {
+  const artifact = await createArtifactSet(t);
+  const family = artifact.catalog.families[FAMILY_ID];
+  const packageName = family.package.fileName;
+  let failAfterUpload = true;
+  const remote = createRemote({
+    after(call) {
+      if (
+        failAfterUpload &&
+        call.args[0] === 'release' &&
+        call.args[1] === 'upload' &&
+        call.args[2] === FAMILY_TAG &&
+        path.basename(call.args[3]) === packageName
+      ) {
+        failAfterUpload = false;
+        return failure('connection lost after upload');
+      }
+      return undefined;
+    },
+  });
+
+  await assert.rejects(
+    () => publishCatalog(baseOptions(artifact, remote.run)),
+    /failed to upload/,
+  );
+  assert.equal(
+    remote.releaseFor(FAMILY_TAG).assets.some((asset) => asset.name === packageName),
+    true,
+  );
+
+  const result = await publishCatalog(baseOptions(artifact, remote.run));
+  assert.deepEqual(result.published, [FAMILY_TAG, CATALOG_TAG]);
+  assert.equal(
+    uploadCalls(remote.calls).filter(
+      (call) => call.tag === FAMILY_TAG && call.fileName === packageName,
+    ).length,
+    1,
+  );
+  assertNoForbiddenCalls(remote.calls);
+});
+
 test('publish failure never reaches the catalog and leaves its draft intact', async (t) => {
   const artifact = await createArtifactSet(t);
   const remote = createRemote({
@@ -559,6 +675,65 @@ test('publish failure never reaches the catalog and leaves its draft intact', as
   assert.deepEqual(remote.publishOrder, [FAMILY_TAG]);
   assert.equal(remote.releaseFor(FAMILY_TAG).draft, false);
   assert.equal(remote.releaseFor(CATALOG_TAG).draft, true);
+  assertNoForbiddenCalls(remote.calls);
+});
+
+test('retry after a partial publication reuses public releases and resumes the catalog draft', async (t) => {
+  const artifact = await createArtifactSet(t);
+  let failCatalogPublish = true;
+  const remote = createRemote({
+    before(call, state) {
+      if (apiMethod(call) === 'PATCH' && failCatalogPublish) {
+        const endpoint = call.args.find((arg) => arg.startsWith('repos/'));
+        const id = Number(endpoint.slice(endpoint.lastIndexOf('/') + 1));
+        if (state.tagForId(id) === CATALOG_TAG) {
+          failCatalogPublish = false;
+          return failure('publish denied');
+        }
+      }
+      return undefined;
+    },
+  });
+
+  await assert.rejects(
+    () => publishCatalog(baseOptions(artifact, remote.run)),
+    /failed to publish/,
+  );
+
+  const result = await publishCatalog(baseOptions(artifact, remote.run));
+  assert.deepEqual(result.reusedPublished, [FAMILY_TAG]);
+  assert.deepEqual(result.published, [CATALOG_TAG]);
+  assert.deepEqual(remote.publishOrder, [FAMILY_TAG, CATALOG_TAG]);
+  assertNoForbiddenCalls(remote.calls);
+});
+
+test('a publish committed before a transport failure is reused on retry', async (t) => {
+  const artifact = await createArtifactSet(t);
+  let failAfterCatalogPublish = true;
+  const remote = createRemote({
+    after(call, state) {
+      if (apiMethod(call) === 'PATCH' && failAfterCatalogPublish) {
+        const endpoint = call.args.find((arg) => arg.startsWith('repos/'));
+        const id = Number(endpoint.slice(endpoint.lastIndexOf('/') + 1));
+        if (state.tagForId(id) === CATALOG_TAG) {
+          failAfterCatalogPublish = false;
+          return failure('connection lost after publish');
+        }
+      }
+      return undefined;
+    },
+  });
+
+  await assert.rejects(
+    () => publishCatalog(baseOptions(artifact, remote.run)),
+    /failed to publish/,
+  );
+  assert.equal(remote.releaseFor(CATALOG_TAG).draft, false);
+
+  const result = await publishCatalog(baseOptions(artifact, remote.run));
+  assert.deepEqual(result.reusedPublished, [FAMILY_TAG, CATALOG_TAG]);
+  assert.deepEqual(result.published, []);
+  assert.deepEqual(remote.publishOrder, [FAMILY_TAG, CATALOG_TAG]);
   assertNoForbiddenCalls(remote.calls);
 });
 
@@ -602,13 +777,12 @@ test('publish rejects an incomplete bootstrap artifact pair before invoking GitH
   );
 });
 
-test('publish implementation has no immutable API, tag-ref, overwrite, cleanup, or deletion path', async () => {
+test('publish implementation has no immutable API, overwrite, cleanup, or deletion path', async () => {
   const source = await fs.promises.readFile(
     new URL('../scripts/lib/publish.mjs', import.meta.url),
     'utf8',
   );
   assert.doesNotMatch(source, /immutable-releases/);
-  assert.doesNotMatch(source, /git\/ref\/tags/);
   assert.doesNotMatch(source, /release['"],\s*['"]delete/);
   assert.doesNotMatch(source, /--clobber/);
   assert.doesNotMatch(source, /--cleanup-tag/);
