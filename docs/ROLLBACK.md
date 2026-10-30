@@ -8,6 +8,18 @@ source archive, catalog, tag, or release asset.
 Delete the local ignored `artifacts/` and `artifacts-repro/` directories, fix the
 input or toolchain, and rebuild.
 
+## Publish Failed With Drafts
+
+Do not delete the Draft Releases or their partial assets. Fix the input or
+toolchain, rebuild and re-verify the complete artifact set, then run the same
+catalog version again. The publisher reuses each Draft, verifies matching
+assets, uploads only missing assets, and publishes only after every Draft is
+complete.
+
+If a verified family was already published before a later step failed, the next
+run reuses it after byte-for-byte remote verification. The catalog remains a
+Draft until every referenced release is complete.
+
 ## Family Release Is Bad
 
 1. Do not edit or replace the published family release.

@@ -107,7 +107,15 @@ test('workflow verifies and uploads before the publish job runs', async () => {
   assert.match(workflow.slice(publishJob), /actions\/download-artifact@v4/);
   assert.match(workflow, /^\s*group: font-catalog-release$/m);
   assert.doesNotMatch(workflow, /^\s*run:.*\$\{\{\s*inputs\./m);
+  assert.match(workflow, /^permissions:\s*\{\}\s*$/m);
+  assert.match(
+    workflow.slice(workflow.indexOf('\n  build:')),
+    /permissions:\s*\n\s+contents: read/,
+  );
   assert.match(workflow.slice(publishJob), /permissions:\s*\n\s+contents: write/);
+  assert.doesNotMatch(workflow, /IMMUTABLE_RELEASES_CONFIRMED|vars\./);
+  assert.doesNotMatch(workflow, /administrator confirmation/i);
+  assert.doesNotMatch(workflow, /personal access token|\bPAT\b/i);
   assert.match(workflow, /node scripts\/bootstrap-bundle\.mjs/);
   assert.match(workflow, /node scripts\/verify-bootstrap\.mjs/);
   assert.match(workflow, /bootstrap-sources-v\$CATALOG_VERSION\.zip/);
@@ -117,15 +125,4 @@ test('workflow verifies and uploads before the publish job runs', async () => {
   assert.match(workflow, /--sha256 "\$BOOTSTRAP_SHA256"/);
   assert.match(workflow, /Bootstrap sidecar does not match the workflow input hash/);
   assert.doesNotMatch(workflow, /[A-Za-z]:[\\/]/);
-  assert.match(
-    workflow,
-    /IMMUTABLE_RELEASES_CONFIRMED:\s*\$\{\{\s*vars\.IMMUTABLE_RELEASES_CONFIRMED\s*\}\}/,
-  );
-  assert.match(
-    workflow,
-    /"\$IMMUTABLE_RELEASES_CONFIRMED"\s*!=\s*"true"/,
-  );
-  assert.ok(
-    workflow.indexOf('Require administrator confirmation') < testIndex,
-  );
 });

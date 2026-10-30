@@ -8,23 +8,26 @@ import {
 } from './manifest.mjs';
 import { sha256File } from './hash.mjs';
 
-function ghFailureIsMissing(result, notFoundText) {
+function ghFailureIsMissing(result) {
   if (result.status === 0) return false;
   const text = `${result.stderr ?? ''}\n${result.stdout ?? ''}`;
-  return /HTTP 404|Not Found|release not found/i.test(text) || text.includes(notFoundText);
+  return /HTTP 404|Not Found|release not found/i.test(text);
 }
 
-function releaseNotes(catalogVersion, files) {
+function releaseNotes(catalogVersion, assets) {
   return [
     `SenrenBanka font artifacts (catalog v${catalogVersion}).`,
     '',
     'This release is immutable. Verify downloads against SHA-256 before use.',
     '',
-    ...files.map((file) => `- ${path.basename(file)}`),
+    ...assets.map((asset) => `- ${asset.fileName}`),
   ].join('\n');
 }
 
 function parseGhJson(result, label) {
+  if (result.status !== 0) {
+    throw new Error(`could not read ${label} from GitHub`);
+  }
   try {
     return JSON.parse(result.stdout);
   } catch {
@@ -38,54 +41,225 @@ function normalizeDigest(value) {
   return match ? match[1].toLowerCase() : null;
 }
 
-async function verifyExistingRelease(release, viewResult) {
-  if (viewResult.status !== 0) {
-    throw new Error(`tag exists but release is missing: ${release.tag}`);
+function decodeRelease(result, label) {
+  const raw = parseGhJson(result, label);
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
+    throw new Error(`${label} returned an invalid release object`);
   }
-  const view = parseGhJson(viewResult, `release ${release.tag}`);
-  if (view.tagName !== release.tag) {
-    throw new Error(`gh returned the wrong release for ${release.tag}`);
+  if (!Number.isSafeInteger(raw.id)) {
+    throw new Error(`${label} returned an invalid release id`);
   }
-  if (view.isDraft !== false) {
-    throw new Error(`existing release ${release.tag} is not published`);
+  if (typeof raw.tag_name !== 'string' || raw.tag_name.length === 0) {
+    throw new Error(`${label} returned an invalid tag name`);
   }
-  const assets = Array.isArray(view.assets) ? view.assets : [];
-  const expected = new Map(
-    await Promise.all(
-      release.files.map(async (file) => {
-        const fileName = path.basename(file);
-        return [
-          fileName,
-          { fileName, size: fs.statSync(file).size, sha256: await sha256File(file) },
-        ];
-      }),
-    ),
-  );
-  const actual = new Map();
-  for (const asset of assets) {
-    if (typeof asset.name !== 'string' || actual.has(asset.name)) {
-      throw new Error(`release ${release.tag} contains duplicate or invalid assets`);
+  if (typeof raw.draft !== 'boolean') {
+    throw new Error(`${label} returned an invalid draft state`);
+  }
+  if (!Array.isArray(raw.assets)) {
+    throw new Error(`${label} returned an invalid asset list`);
+  }
+
+  const assets = raw.assets.map((asset, index) => {
+    if (asset === null || typeof asset !== 'object' || Array.isArray(asset)) {
+      throw new Error(`${label} returned invalid asset metadata at index ${index}`);
     }
-    actual.set(asset.name, asset);
+    if (typeof asset.name !== 'string' || asset.name.length === 0) {
+      throw new Error(`${label} returned an asset without a valid name`);
+    }
+    if (!Number.isSafeInteger(asset.size) || asset.size < 0) {
+      throw new Error(`${label} returned an invalid size for asset ${asset.name}`);
+    }
+    return {
+      name: asset.name,
+      size: asset.size,
+      digest: normalizeDigest(asset.digest),
+    };
+  });
+
+  return {
+    id: raw.id,
+    tagName: raw.tag_name,
+    isDraft: raw.draft,
+    assets,
+  };
+}
+
+function assetsByName(release) {
+  const assets = new Map();
+  for (const asset of release.assets) {
+    if (assets.has(asset.name)) {
+      throw new Error(`release ${release.tagName} contains duplicate asset ${asset.name}`);
+    }
+    assets.set(asset.name, asset);
   }
+  return assets;
+}
+
+function assertAssetMatches(release, actual, expected) {
+  if (actual.size !== expected.size || actual.digest !== expected.sha256) {
+    throw new Error(
+      `release ${release.tagName} asset ${expected.fileName} conflicts with local bytes`,
+    );
+  }
+}
+
+function inspectDraft(release, spec) {
+  if (release.tagName !== spec.tag) {
+    throw new Error(`GitHub returned the wrong release for ${spec.tag}`);
+  }
+  if (!release.isDraft) {
+    throw new Error(`expected draft release ${spec.tag}, but it is already published`);
+  }
+
+  const expected = new Map(spec.assets.map((asset) => [asset.fileName, asset]));
+  const actual = assetsByName(release);
+  const extra = [...actual.keys()].filter((name) => !expected.has(name));
+  if (extra.length) {
+    throw new Error(`draft release ${spec.tag} contains unexpected assets: ${extra.join(', ')}`);
+  }
+  for (const [name, remoteAsset] of actual) {
+    assertAssetMatches(release, remoteAsset, expected.get(name));
+  }
+
+  return spec.assets
+    .filter((asset) => !actual.has(asset.fileName))
+    .map((asset) => asset.fileName);
+}
+
+function verifyRelease(release, spec, expectedDraft) {
+  if (release.tagName !== spec.tag) {
+    throw new Error(`GitHub returned the wrong release for ${spec.tag}`);
+  }
+  if (release.isDraft !== expectedDraft) {
+    throw new Error(
+      `release ${spec.tag} has draft=${release.isDraft}; expected draft=${expectedDraft}`,
+    );
+  }
+
+  const expected = new Map(spec.assets.map((asset) => [asset.fileName, asset]));
+  const actual = assetsByName(release);
   const missing = [...expected.keys()].filter((name) => !actual.has(name));
   const extra = [...actual.keys()].filter((name) => !expected.has(name));
   if (missing.length || extra.length) {
     throw new Error(
-      `release ${release.tag} asset set mismatch${
+      `release ${spec.tag} asset set mismatch${
         missing.length ? `; missing: ${missing.join(', ')}` : ''
       }${extra.length ? `; extra: ${extra.join(', ')}` : ''}`,
     );
   }
   for (const [name, wanted] of expected) {
-    const asset = actual.get(name);
-    const digest = normalizeDigest(asset.digest);
-    if (Number(asset.size) !== wanted.size || digest !== wanted.sha256) {
-      throw new Error(
-        `existing release ${release.tag} asset ${name} does not match catalog bytes`,
-      );
-    }
+    assertAssetMatches(release, actual.get(name), wanted);
   }
+}
+
+function assertEmptyDraft(release, spec) {
+  if (release.tagName !== spec.tag) {
+    throw new Error(`GitHub returned the wrong release for ${spec.tag}`);
+  }
+  if (!release.isDraft) {
+    throw new Error(`new release ${spec.tag} was not created as a draft`);
+  }
+  if (release.assets.length !== 0) {
+    throw new Error(`new draft release ${spec.tag} was not created empty`);
+  }
+}
+
+async function describeAssets(files) {
+  const assets = [];
+  const seen = new Set();
+  for (const file of files) {
+    const fileName = path.basename(file);
+    if (seen.has(fileName)) {
+      throw new Error(`duplicate release asset file name: ${fileName}`);
+    }
+    let stat;
+    try {
+      stat = await fs.promises.lstat(file);
+    } catch {
+      throw new Error(`release asset is missing: ${file}`);
+    }
+    if (!stat.isFile()) {
+      throw new Error(`release asset is not a regular file: ${file}`);
+    }
+    seen.add(fileName);
+    assets.push({
+      fileName,
+      file,
+      size: stat.size,
+      sha256: await sha256File(file),
+    });
+  }
+  return assets;
+}
+
+async function buildReleaseSpecs({ dir, catalog, catalogVersion }) {
+  const specs = [];
+  const catalogFiles = [
+    path.join(dir, 'catalog.json'),
+    path.join(dir, 'catalog.json.sha256'),
+    path.join(dir, 'SHA256SUMS'),
+  ];
+
+  for (const id of Object.keys(catalog.families).sort()) {
+    const family = catalog.families[id];
+    specs.push({
+      kind: 'family',
+      tag: familyReleaseTag(id, family.version),
+      title: family.package.fileName,
+      files: [
+        path.join(dir, family.package.fileName),
+        path.join(dir, `${family.package.fileName}.sha256`),
+        path.join(dir, family.source.fileName),
+        path.join(dir, `${family.source.fileName}.sha256`),
+      ],
+    });
+  }
+
+  const bootstrapName = bootstrapArchiveFileName(catalogVersion);
+  const bootstrapFiles = [
+    path.join(dir, bootstrapName),
+    path.join(dir, `${bootstrapName}.sha256`),
+  ];
+  const hasBootstrap = fs.existsSync(bootstrapFiles[0]);
+  const hasBootstrapSidecar = fs.existsSync(bootstrapFiles[1]);
+  if (hasBootstrap !== hasBootstrapSidecar) {
+    throw new Error('bootstrap archive and checksum sidecar must be present together');
+  }
+  if (hasBootstrap) {
+    specs.unshift({
+      kind: 'bootstrap',
+      tag: bootstrapReleaseTag(catalogVersion),
+      title: `Bootstrap sources v${catalogVersion}`,
+      files: bootstrapFiles,
+    });
+    catalogFiles.push(...bootstrapFiles);
+  }
+
+  specs.push({
+    kind: 'catalog',
+    tag: catalogReleaseTag(catalogVersion),
+    title: `Font catalog v${catalogVersion}`,
+    files: catalogFiles,
+  });
+
+  for (const spec of specs) {
+    spec.assets = await describeAssets(spec.files);
+    delete spec.files;
+  }
+  return specs;
+}
+
+function dryRunPlan(specs) {
+  return specs.flatMap((spec) => [
+    { action: 'ensure-empty-draft', tag: spec.tag },
+    ...spec.assets.map((asset) => ({
+      action: 'ensure-asset',
+      tag: spec.tag,
+      fileName: asset.fileName,
+    })),
+    { action: 'verify-draft', tag: spec.tag },
+    { action: 'publish', tag: spec.tag },
+  ]);
 }
 
 export async function publishCatalog({
@@ -96,7 +270,6 @@ export async function publishCatalog({
   catalog,
   run,
   dryRun = false,
-  immutableReleasesConfirmed = false,
   log = () => {},
 }) {
   if (!/^[^/]+\/[^/]+$/.test(repo)) throw new Error('repo must be owner/name');
@@ -109,241 +282,144 @@ export async function publishCatalog({
     );
   }
 
-  const releases = [];
-  const administratorConfirmed = immutableReleasesConfirmed === true;
-  const catalogFiles = [
-    path.join(dir, 'catalog.json'),
-    path.join(dir, 'catalog.json.sha256'),
-    path.join(dir, 'SHA256SUMS'),
-  ];
-  for (const id of Object.keys(catalog.families).sort()) {
-    const family = catalog.families[id];
-    const tag = familyReleaseTag(id, family.version);
-    const files = [
-      path.join(dir, family.package.fileName),
-      path.join(dir, `${family.package.fileName}.sha256`),
-      path.join(dir, family.source.fileName),
-      path.join(dir, `${family.source.fileName}.sha256`),
-    ];
-    releases.push({ tag, files, title: `${family.package.fileName}`, existing: false });
+  const specs = await buildReleaseSpecs({ dir, catalog, catalogVersion });
+  if (dryRun) {
+    const plan = dryRunPlan(specs);
+    return { dryRun: true, releases: specs.map((spec) => spec.tag), plan, calls: [] };
   }
-  const bootstrapName = bootstrapArchiveFileName(catalogVersion);
-  const bootstrapFiles = [
-    path.join(dir, bootstrapName),
-    path.join(dir, `${bootstrapName}.sha256`),
-  ];
-  const hasBootstrap = fs.existsSync(bootstrapFiles[0]);
-  const hasBootstrapSidecar = fs.existsSync(bootstrapFiles[1]);
-  if (hasBootstrap !== hasBootstrapSidecar) {
-    throw new Error('bootstrap archive and checksum sidecar must be present together');
-  }
-  if (hasBootstrap) {
-    releases.unshift({
-      tag: bootstrapReleaseTag(catalogVersion),
-      files: bootstrapFiles,
-      title: `Bootstrap sources v${catalogVersion}`,
-      existing: false,
-    });
-    catalogFiles.push(...bootstrapFiles);
-  }
-  const catalogTag = catalogReleaseTag(catalogVersion);
-  releases.push({
-    tag: catalogTag,
-    files: catalogFiles,
-    title: `Font catalog v${catalogVersion}`,
-    existing: false,
-  });
+  if (typeof run !== 'function') throw new Error('run must be a function');
 
   const calls = [];
-  const record = async (command, args, options = {}) => {
-    const call = { command, args, ...options };
+  const record = async (command, args) => {
+    const call = { command, args };
     calls.push(call);
-    if (dryRun) return { status: 0, stdout: '', stderr: '' };
     return run(call);
   };
+  const releaseApi = (method, suffix) =>
+    record('gh', ['api', '--method', method, `repos/${repo}/releases${suffix}`]);
 
-  log(`preflight immutable-release setting for ${repo}`);
-  const immutable = await record('gh', [
-    'api',
-    `repos/${repo}/immutable-releases`,
-    '--jq',
-    '.enabled',
-  ]);
-  if (!dryRun) {
-    const immutableValue = (immutable.stdout ?? '').trim();
-    if (immutableValue === 'true') {
-      log('GitHub Immutable Releases confirmed by API');
-    } else if (immutableValue === 'false') {
-      throw new Error(
-        'GitHub Immutable Releases is disabled; repository confirmation cannot override the API',
-      );
-    } else if (!administratorConfirmed) {
-      throw new Error(
-        'could not confirm GitHub Immutable Releases: the API is inaccessible to this token. ' +
-          'An administrator must verify the setting and set IMMUTABLE_RELEASES_CONFIRMED=true',
-      );
-    } else {
-      log(
-        'GitHub Immutable Releases API is inaccessible; using administrator-confirmed repository variable',
-      );
+  async function fetchRelease(tag) {
+    const result = await releaseApi('GET', `/tags/${encodeURIComponent(tag)}`);
+    if (result.status === 0) {
+      return decodeRelease(result, `release ${tag}`);
     }
+    if (ghFailureIsMissing(result)) return null;
+    throw new Error(`could not determine remote state for ${tag}`);
   }
 
-  const catalogRelease = releases.at(-1);
-  for (const release of releases) {
-    log(`preflight ${release.tag}`);
-    const tagResult = await record('gh', [
+  async function createEmptyDraft(spec) {
+    const notes = releaseNotes(catalogVersion, spec.assets);
+    const result = await record('gh', [
       'api',
-      `repos/${repo}/git/ref/tags/${encodeURIComponent(release.tag)}`,
+      '--method',
+      'POST',
+      `repos/${repo}/releases`,
+      '-f',
+      `tag_name=${spec.tag}`,
+      '-f',
+      `target_commitish=${targetSha}`,
+      '-f',
+      `name=${spec.title}`,
+      '-f',
+      `body=${notes}`,
+      '-F',
+      'draft=true',
     ]);
-    if (dryRun) continue;
-    if (tagResult.status === 0) {
-      if (release === catalogRelease) {
-        throw new Error(`tag already exists and will not be overwritten: ${release.tag}`);
-      }
-      const releaseResult = await record('gh', [
-        'release',
-        'view',
-        release.tag,
-        '--repo',
-        repo,
-        '--json',
-        'tagName,isDraft,assets',
-      ]);
-      await verifyExistingRelease(release, releaseResult);
-      release.existing = true;
-      continue;
+    if (result.status !== 0) {
+      throw new Error(`failed to create empty draft release ${spec.tag}`);
     }
-    if (!ghFailureIsMissing(tagResult, 'Not Found')) {
-      throw new Error(`could not determine tag state for ${release.tag}`);
-    }
-    const releaseResult = await record('gh', [
+    const release = decodeRelease(result, `new release ${spec.tag}`);
+    assertEmptyDraft(release, spec);
+    return release;
+  }
+
+  async function uploadAsset(spec, asset) {
+    const result = await record('gh', [
       'release',
-      'view',
-      release.tag,
+      'upload',
+      spec.tag,
+      asset.file,
       '--repo',
       repo,
-      '--json',
-      'tagName',
     ]);
-    if (releaseResult.status === 0) {
-      throw new Error(`release already exists: ${release.tag}`);
-    }
-    if (!ghFailureIsMissing(releaseResult, 'release not found')) {
-      throw new Error(`could not determine release state for ${release.tag}`);
+    if (result.status !== 0) {
+      throw new Error(`failed to upload ${asset.fileName} to draft ${spec.tag}`);
     }
   }
 
-  const cleanupDraft = async (tag) => {
-    let view;
-    try {
-      view = await record('gh', [
-        'release',
-        'view',
-        tag,
-        '--repo',
-        repo,
-        '--json',
-        'isDraft',
-      ]);
-    } catch {
-      return;
-    }
-    if (view.status !== 0) return;
-    let metadata;
-    try {
-      metadata = JSON.parse(view.stdout);
-    } catch {
-      return;
-    }
-    if (metadata.isDraft !== true) return;
-    await record('gh', [
-      'release',
-      'delete',
-      tag,
-      '--repo',
-      repo,
-      '--yes',
-      '--cleanup-tag',
-    ]).catch(() => {});
-  };
-
-  const attempted = [];
-  const published = new Set();
-  try {
-    for (const release of releases.slice(0, -1).filter((item) => !item.existing)) {
-      log(`create draft ${release.tag}`);
-      attempted.push(release.tag);
-      const result = await record('gh', [
-        'release',
-        'create',
-        release.tag,
-        '--repo',
-        repo,
-        '--draft',
-        '--target',
-        targetSha,
-        '--title',
-        release.title,
-        '--notes',
-        releaseNotes(catalogVersion, release.files),
-        ...release.files,
-      ]);
-      if (!dryRun && result.status !== 0) {
-        throw new Error(`failed to create draft release ${release.tag}`);
-      }
-    }
-
-    log(`create draft ${catalogRelease.tag}`);
-    attempted.push(catalogRelease.tag);
-    const catalogResult = await record('gh', [
-      'release',
-      'create',
-      catalogRelease.tag,
-      '--repo',
-      repo,
-      '--draft',
-      '--target',
-      targetSha,
-      '--title',
-      catalogRelease.title,
-      '--notes',
-      releaseNotes(catalogVersion, catalogRelease.files),
-      ...catalogRelease.files,
+  async function publishDraft(spec, release) {
+    const result = await record('gh', [
+      'api',
+      '--method',
+      'PATCH',
+      `repos/${repo}/releases/${release.id}`,
+      '-F',
+      'draft=false',
     ]);
-    if (!dryRun && catalogResult.status !== 0) {
-      throw new Error(`failed to create draft release ${catalogRelease.tag}`);
+    if (result.status !== 0) {
+      throw new Error(`failed to publish ${spec.tag}`);
     }
+    return result;
+  }
 
-    // Publish families first. The catalog is the atomic visibility point: it
-    // must never point at a family release that is still private.
-    for (const release of releases.filter((item) => !item.existing)) {
-      log(`publish ${release.tag}`);
-      const result = await record('gh', [
-        'release',
-        'edit',
-        release.tag,
-        '--repo',
-        repo,
-        '--draft=false',
-      ]);
-      if (!dryRun && result.status !== 0) {
-        throw new Error(`failed to publish ${release.tag}`);
-      }
-      published.add(release.tag);
+  const pending = [];
+  const reusedPublished = [];
+
+  // Inspect every release before creating or uploading anything. A conflict in
+  // any existing release therefore fails before this run mutates remote state.
+  for (const spec of specs) {
+    log(`inspect ${spec.tag}`);
+    const release = await fetchRelease(spec.tag);
+    if (release === null) {
+      pending.push({ spec, release: null, missing: spec.assets.map((asset) => asset.fileName) });
+    } else if (release.isDraft) {
+      pending.push({ spec, release, missing: inspectDraft(release, spec) });
+    } else {
+      verifyRelease(release, spec, false);
+      reusedPublished.push(spec.tag);
     }
-  } catch (error) {
-    if (!dryRun) {
-      for (const tag of [...new Set(attempted)].reverse()) {
-        if (!published.has(tag)) await cleanupDraft(tag);
-      }
+  }
+
+  for (const item of pending) {
+    if (item.release !== null) continue;
+    log(`create empty draft ${item.spec.tag}`);
+    item.release = await createEmptyDraft(item.spec);
+  }
+
+  for (const item of pending) {
+    const expected = new Map(item.spec.assets.map((asset) => [asset.fileName, asset]));
+    for (const fileName of item.missing) {
+      log(`upload ${fileName} to ${item.spec.tag}`);
+      await uploadAsset(item.spec, expected.get(fileName));
     }
-    throw error;
+  }
+
+  const verifiedDrafts = [];
+  for (const item of pending) {
+    log(`verify draft ${item.spec.tag}`);
+    const release = await fetchRelease(item.spec.tag);
+    if (release === null) {
+      throw new Error(`draft release disappeared during publish: ${item.spec.tag}`);
+    }
+    verifyRelease(release, item.spec, true);
+    verifiedDrafts.push({ spec: item.spec, release });
+  }
+
+  // No publish call may run until every draft above has the exact expected
+  // metadata and assets. The catalog stays last, so consumers never observe a
+  // catalog that points at an incomplete family/bootstrap release.
+  const published = [];
+  for (const item of verifiedDrafts) {
+    log(`publish ${item.spec.tag}`);
+    await publishDraft(item.spec, item.release);
+    published.push(item.spec.tag);
   }
 
   return {
-    dryRun,
-    releases: releases.map((release) => release.tag),
+    dryRun: false,
+    releases: specs.map((spec) => spec.tag),
+    reusedPublished,
+    published,
     calls,
   };
 }

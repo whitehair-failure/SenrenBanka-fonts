@@ -79,7 +79,7 @@ that only exist after a build.
 | `node scripts/build-family.mjs --id <id> --bootstrap-dir <dir>` | Build one family |
 | `node scripts/build-catalog.mjs --out artifacts` | Build the complete catalog |
 | `npm run release:verify -- --dir artifacts` | Recompute and verify every package pointer |
-| `npm run release:publish -- --dir artifacts --catalog-version <v> --target-sha <sha>` | Create immutable bootstrap/family releases, then the catalog release |
+| `npm run release:publish -- --dir artifacts --catalog-version <v> --target-sha <sha>` | Create or reuse Draft releases, verify them remotely, then publish bootstrap/family releases and the catalog last |
 
 ## Package Contract
 

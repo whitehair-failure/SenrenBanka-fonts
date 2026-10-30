@@ -70,11 +70,13 @@ bootstrap-sources-v<catalogVersion>.zip.sha256
 ```
 
 The bundle is part of `SHA256SUMS`, verified by `release:verify`, and uploaded
-with the catalog release. Its release URL and SHA-256 are published out of band
-or in the catalog release notes for later workflows.
+to both the dedicated `bootstrap-v<catalogVersion>` release and the catalog
+release. Its release URL and SHA-256 are published out of band or in the
+catalog release notes for later workflows.
 
-For the first catalog, publish the generated files as the immutable bootstrap
-release before running the catalog workflow:
+For the first catalog, host the generated files as a verified bootstrap input
+before running the catalog workflow. They may already exist in the immutable
+bootstrap release:
 
 ```text
 Tag: bootstrap-v<catalogVersion>
@@ -84,7 +86,9 @@ bootstrap-sources-v<catalogVersion>.zip.sha256
 
 Pass its HTTPS release URL as `bootstrapSourceUrl` and the sidecar digest as
 `bootstrapSourceSha256`. The workflow rejects a bundle that differs from the
-published digest or from the descriptor-derived member set.
+published digest or from the descriptor-derived member set. The publish
+transaction reuses that release only when its tag, asset set, sizes, and
+SHA-256 digests match exactly; it never overwrites the seed.
 
 The first v1.0.0 release needs a bootstrap bundle for fixed WOFF2 files that do
 not yet have a direct public source URL. Later releases can use the source

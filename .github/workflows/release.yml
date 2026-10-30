@@ -26,29 +26,18 @@ concurrency:
   group: font-catalog-release
   cancel-in-progress: false
 
-permissions:
-  contents: read
-
-env:
-  # Admin-verified repository variable; the Actions token may not be able to
-  # read the admin-only Immutable Releases API endpoint.
-  IMMUTABLE_RELEASES_CONFIRMED: ${{ vars.IMMUTABLE_RELEASES_CONFIRMED }}
+permissions: {}
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Require administrator confirmation of immutable releases
-        run: |
-          if [[ "$IMMUTABLE_RELEASES_CONFIRMED" != "true" ]]; then
-            echo "Set repository variable IMMUTABLE_RELEASES_CONFIRMED=true only after an administrator has verified Immutable Releases is enabled." >&2
-            exit 1
-          fi
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -204,7 +193,7 @@ jobs:
             exit 1
           fi
 
-      - name: Publish immutable family and catalog releases
+      - name: Create or reuse Drafts, verify, and publish releases
         env:
           GH_TOKEN: ${{ github.token }}
           CATALOG_VERSION: ${{ inputs.catalogVersion }}

@@ -2,38 +2,38 @@
 
 ## Prerequisites
 
-1. Enable **Immutable Releases** in the GitHub repository settings.
-2. Merge the verified descriptor/toolchain commit.
-3. Publish or otherwise host a descriptor-verified bootstrap bundle if any
+1. Merge the verified descriptor/toolchain commit.
+2. Publish or otherwise host a descriptor-verified bootstrap bundle if any
    source has no direct HTTPS download. No machine-local path is used.
-4. Keep `catalogVersion` distinct when publishing a new catalog snapshot.
+3. Keep `catalogVersion` distinct when publishing a new catalog snapshot.
 
-The publish script checks the GitHub Immutable Releases API and refuses to run
-when it is disabled.
+Repository administrators may enable **Immutable Releases** in GitHub settings,
+but the publish script does not query that repository-level setting. Publishing
+uses only the workflow's built-in `GITHUB_TOKEN` with `contents: write`; it does
+not require a personal access token or an administrator credential.
 
-### Actions Token Confirmation
+## Publish Transaction
 
-The admin-only GitHub Immutable Releases API may return `403` for the default
-Actions `GITHUB_TOKEN`. An administrator must verify in repository settings that
-**Immutable Releases** is enabled and then create the Actions repository
-variable `IMMUTABLE_RELEASES_CONFIRMED` with the exact value `true`.
+For each expected release, the script fetches the release by tag from the
+GitHub API:
 
-The workflow fails unless that variable is exactly `true`. It always attempts
-the API check first:
+1. Missing release: create an empty Draft with the verified target commit.
+2. Existing Draft: reuse it, reject any extra or byte-conflicting asset, and
+   upload only expected assets that are absent.
+3. Existing published Release: reuse it only when the tag, published state,
+   exact asset set, sizes, and SHA-256 digests all match.
 
-- API `true` passes;
-- API `false` fails and cannot be overridden;
-- an inaccessible API fails unless the repository variable is exactly `true`.
+After all uploads, the script fetches every Draft again and verifies its
+`tagName`, draft state, exact asset set, sizes, and SHA-256 digests. No release
+is published until every Draft passes. It then publishes in
+`bootstrap-v<version>` → `font-<id>-v<version>` → `catalog-v<version>` order.
 
-For local publishing with user authentication, the API check normally succeeds
-without the variable. If a locally authenticated token also lacks access, run:
-
-```bash
-IMMUTABLE_RELEASES_CONFIRMED=true npm run release:publish -- \
-  --dir artifacts --catalog-version 1.0.0 --target-sha "$(git rev-parse HEAD)"
-```
-
-The equivalent explicit flag is `--immutable-releases-confirmed`.
+Drafts and published release assets are never deleted or overwritten. If an
+upload, verification, or publish step fails, Drafts remain in place. Re-running
+the same catalog version reuses the Drafts, skips matching assets, uploads only
+missing assets, and publishes the verified set again. A failure never produces
+an incomplete published Release; because the catalog is last, consumers never
+see a catalog that references an unpublished family/bootstrap.
 
 ## Build And Verify
 
@@ -50,9 +50,9 @@ npm run release:verify -- --dir artifacts --compare-dir artifacts-repro --catalo
 node scripts/publish.mjs --dir artifacts --catalog-version 1.0.0 --target-sha "$(git rev-parse HEAD)" --dry-run
 ```
 
-All verification, including the two-build hash comparison, happens before any
-release call. The workflow uploads the verified artifact set before the publish
-job starts.
+All local verification, including the two-build hash comparison, happens
+before any release mutation. The workflow uploads the verified artifact set
+before the publish job starts.
 
 ## GitHub Actions
 
@@ -70,8 +70,8 @@ The workflow:
 3. builds and verifies twice;
 4. uploads the artifact set, including the bootstrap bundle;
 5. re-verifies the downloaded artifact in the write-enabled publish job;
-6. creates bootstrap and family releases as drafts with checksums;
-7. creates the catalog release draft, including the bootstrap bundle;
+6. creates or reuses empty Drafts for the bootstrap, every family, and the catalog;
+7. uploads only missing assets and verifies every Draft through the GitHub API;
 8. publishes `bootstrap-v<version>`, then family releases, then
    `catalog-v<version>` last.
 
@@ -104,7 +104,9 @@ Catalog release:
 - `bootstrap-sources-v<catalogVersion>.zip` and `.sha256` when bootstrap-only
   sources exist
 
-An existing catalog tag/release is a hard failure. An existing family tag is
-reused only after its published assets are verified byte-for-byte against the
-new catalog pointers. Assets are never overwritten with `--clobber`. Fix
-changed families by increasing their family version.
+An existing release is reused only after its published assets are verified
+byte-for-byte against the expected files. This applies to bootstrap, family, and
+catalog releases, making a fully published catalog rerun a read-only
+verification. Assets are never overwritten with `--clobber`. Any missing,
+extra, or conflicting asset fails closed. Fix changed families by increasing
+their family version, then publish a new catalog version.
