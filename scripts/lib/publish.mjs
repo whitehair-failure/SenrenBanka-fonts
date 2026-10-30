@@ -1,6 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { catalogReleaseTag, familyReleaseTag } from './manifest.mjs';
+import {
+  bootstrapArchiveFileName,
+  bootstrapReleaseTag,
+  catalogReleaseTag,
+  familyReleaseTag,
+} from './manifest.mjs';
 import { sha256File } from './hash.mjs';
 
 function ghFailureIsMissing(result, notFoundText) {
@@ -119,6 +124,20 @@ export async function publishCatalog({
       path.join(dir, `${family.source.fileName}.sha256`),
     ];
     releases.push({ tag, files, title: `${family.package.fileName}`, existing: false });
+  }
+  const bootstrapName = bootstrapArchiveFileName(catalogVersion);
+  const bootstrapFiles = [
+    path.join(dir, bootstrapName),
+    path.join(dir, `${bootstrapName}.sha256`),
+  ];
+  if (fs.existsSync(bootstrapFiles[0])) {
+    releases.unshift({
+      tag: bootstrapReleaseTag(catalogVersion),
+      files: bootstrapFiles,
+      title: `Bootstrap sources v${catalogVersion}`,
+      existing: false,
+    });
+    catalogFiles.push(...bootstrapFiles);
   }
   const catalogTag = catalogReleaseTag(catalogVersion);
   releases.push({

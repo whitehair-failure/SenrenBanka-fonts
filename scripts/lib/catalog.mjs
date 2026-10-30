@@ -1,10 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { buildFamily } from './build-family.mjs';
-import { sha256, sidecarContent } from './hash.mjs';
+import { bootstrapSourcePlan, buildBootstrapBundle } from './bootstrap.mjs';
+import { assertSha256, sha256, sidecarContent } from './hash.mjs';
 import { compareText, stableStringify } from './json.mjs';
 import { assertReplaceableDirectory } from './paths.mjs';
 import {
+  bootstrapArchiveFileName,
   catalogReleaseTag,
   familyReleaseTag,
 } from './manifest.mjs';
@@ -34,6 +36,7 @@ export async function buildCatalog({
   fetchImpl,
   cacheDir,
   splitter,
+  expectedBootstrapSha256,
   onProgress = () => {},
 }) {
   const output = guardOutputDirectory(outDir, repoRoot);
@@ -43,7 +46,45 @@ export async function buildCatalog({
 
   const families = {};
   const summary = [];
+  let bootstrap = null;
+  if (expectedBootstrapSha256) {
+    assertSha256(expectedBootstrapSha256, 'expected bootstrap sha256');
+    if (!bootstrapDir) {
+      throw new Error('expected bootstrap SHA-256 requires --bootstrap-dir');
+    }
+  }
   try {
+    const bootstrapPlan = bootstrapSourcePlan(descriptors);
+    if (bootstrapDir && bootstrapPlan.selected.length > 0) {
+      onProgress({ phase: 'bootstrap', files: bootstrapPlan.selected.length });
+      const bundle = await buildBootstrapBundle({
+        bootstrapDir,
+        descriptors,
+      });
+      if (expectedBootstrapSha256 && bundle.sha256 !== expectedBootstrapSha256) {
+        throw new Error(
+          `bootstrap bundle SHA-256 mismatch: expected ${expectedBootstrapSha256}, got ${bundle.sha256}`,
+        );
+      }
+      const fileName = bootstrapArchiveFileName(catalogVersion);
+      await writeArtifact(temporary, fileName, bundle.data);
+      await writeArtifact(
+        temporary,
+        `${fileName}.sha256`,
+        sidecarContent(bundle.sha256, fileName),
+      );
+      bootstrap = {
+        fileName,
+        sha256: bundle.sha256,
+        size: bundle.size,
+        files: bundle.included.length,
+      };
+      onProgress({
+        phase: 'bootstrap-built',
+        files: bundle.included.length,
+        sha256: bundle.sha256,
+      });
+    }
     for (const item of descriptors) {
       const { descriptor } = item;
       onProgress({ phase: 'start', id: descriptor.id, role: descriptor.role });
@@ -123,6 +164,7 @@ export async function buildCatalog({
 
     const payload = [
       ['catalog.json', catalogSha256],
+      ...(bootstrap ? [[bootstrap.fileName, bootstrap.sha256]] : []),
       ...summary.flatMap((item) => [
         [item.packageFileName, item.packageSha256],
         [item.sourceFileName, item.sourceSha256],
@@ -140,6 +182,7 @@ export async function buildCatalog({
       catalog,
       catalogSha256,
       catalogSize: catalogData.length,
+      bootstrap,
       summary,
     };
   } catch (error) {

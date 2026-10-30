@@ -27,6 +27,12 @@ the corrected family.
 An already-published immutable catalog remains downloadable for audit and
 rollback to the last known-good version.
 
+## Bootstrap Release Is Bad
+
+Do not overwrite `bootstrap-v<version>`. Generate a corrected descriptor
+version, publish a new bootstrap release, and reference its URL and SHA-256 in
+the next catalog workflow run.
+
 ## Toolchain Regression
 
 Revert the tool commit and rebuild the old descriptor. Old descriptor versions

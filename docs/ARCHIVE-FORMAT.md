@@ -1,6 +1,7 @@
 # Archive Format
 
-Archives are deterministic USTAR files compressed with gzip level 9.
+Family and source archives are deterministic USTAR files compressed with gzip
+level 9.
 
 - entry paths are safe POSIX relative paths;
 - entries are sorted by path using locale-independent code-point ordering;
@@ -43,6 +44,19 @@ source/licenses/<license-file>
 The source archive contains the exact input bytes for the descriptor. For a
 normal build it is also the authoritative offline rebuild input for that family
 version.
+
+## Bootstrap ZIP
+
+The first-release bootstrap archive is a deterministic stored ZIP:
+
+```text
+source/fonts/<fileName>
+```
+
+It contains only descriptor source files without a public download URL. Entries
+are sorted, have fixed 1980-01-01 timestamps, mode `0644`, no extra fields, and
+no directory/link entries. The verifier requires an exact member set, descriptor
+size and SHA-256, safe paths, case-insensitive uniqueness, and bounded expansion.
 
 ## Verification
 

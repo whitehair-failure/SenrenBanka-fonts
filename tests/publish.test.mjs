@@ -31,6 +31,17 @@ function catalogFixture() {
   };
 }
 
+function bootstrapReleaseFixture() {
+  const catalog = catalogFixture();
+  return {
+    catalog,
+    bootstrapFiles: [
+      'bootstrap-sources-v1.0.0.zip',
+      'bootstrap-sources-v1.0.0.zip.sha256',
+    ],
+  };
+}
+
 function successfulRunner({ failEdit = false } = {}) {
   const calls = [];
   return {
@@ -123,7 +134,22 @@ test('failed draft workflow removes drafts and never publishes a partial catalog
   );
 });
 
-test('a failed release create cleans up a draft that was created before the error', async () => {
+test('a failed release create cleans up a draft that was created before the error', async (t) => {
+  const dir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'font-publish-fail-'));
+  t.after(() => fs.promises.rm(dir, { recursive: true, force: true }));
+  const catalog = catalogFixture();
+  const files = [
+    catalog.families['fixture-a'].package.fileName,
+    `${catalog.families['fixture-a'].package.fileName}.sha256`,
+    catalog.families['fixture-a'].source.fileName,
+    `${catalog.families['fixture-a'].source.fileName}.sha256`,
+    'catalog.json',
+    'catalog.json.sha256',
+    'SHA256SUMS',
+  ];
+  for (const fileName of files) {
+    await fs.promises.writeFile(path.join(dir, fileName), `fixture:${fileName}\n`);
+  }
   const calls = [];
   const runner = {
     async run(call) {
@@ -148,7 +174,7 @@ test('a failed release create cleans up a draft that was created before the erro
     },
   };
   await assert.rejects(
-    () => publishCatalog({ ...baseOptions, run: runner.run }),
+    () => publishCatalog({ ...baseOptions, dir, catalog, run: runner.run }),
     /failed to create draft release/,
   );
   assert.ok(
@@ -259,4 +285,42 @@ test('dry-run records the plan without invoking the release runner', async () =>
   assert.equal(invoked, false);
   assert.equal(result.dryRun, true);
   assert.ok(result.calls.some((call) => call.args.includes('--draft')));
+});
+
+test('catalog release uploads bootstrap archive when it exists in the artifact set', async (t) => {
+  const dir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'font-publish-bootstrap-'));
+  t.after(() => fs.promises.rm(dir, { recursive: true, force: true }));
+  const { catalog, bootstrapFiles } = bootstrapReleaseFixture();
+  for (const fileName of [
+    'catalog.json',
+    'catalog.json.sha256',
+    'SHA256SUMS',
+    ...bootstrapFiles,
+    catalog.families['fixture-a'].package.fileName,
+    `${catalog.families['fixture-a'].package.fileName}.sha256`,
+    catalog.families['fixture-a'].source.fileName,
+    `${catalog.families['fixture-a'].source.fileName}.sha256`,
+  ]) {
+    await fs.promises.writeFile(path.join(dir, fileName), `fixture:${fileName}\n`);
+  }
+  const runner = successfulRunner();
+  const result = await publishCatalog({ ...baseOptions, dir, catalog, run: runner.run });
+  assert.ok(result.releases.includes('catalog-v1.0.0'));
+  const catalogCreate = runner.calls.find(
+    (call) =>
+      call.args[0] === 'release' &&
+      call.args[1] === 'create' &&
+      call.args[2] === 'catalog-v1.0.0',
+  );
+  assert.ok(catalogCreate);
+  assert.ok(catalogCreate.args.some((arg) => arg.endsWith(bootstrapFiles[0])));
+  assert.ok(catalogCreate.args.some((arg) => arg.endsWith(bootstrapFiles[1])));
+  assert.ok(
+    runner.calls.some(
+      (call) =>
+        call.args[0] === 'release' &&
+        call.args[1] === 'create' &&
+        call.args[2] === 'bootstrap-v1.0.0',
+    ),
+  );
 });

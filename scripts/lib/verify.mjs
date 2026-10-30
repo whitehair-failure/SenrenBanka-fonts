@@ -10,9 +10,14 @@ import {
   parseUnicodeRanges,
   validateFontMetadata,
 } from './font.mjs';
+import {
+  bootstrapSourcePlan,
+  verifyBootstrapBundleBuffer,
+} from './bootstrap.mjs';
 import { sha256, verifySha256 } from './hash.mjs';
 import { parseJson, stableStringify } from './json.mjs';
 import {
+  bootstrapArchiveFileName,
   expectedFamilyPaths,
   expectedSourcePaths,
   sourceArchiveFileName,
@@ -418,6 +423,35 @@ export async function verifyCatalogDirectory({ dir, descriptors }) {
 
   const expectedFiles = new Set(['catalog.json', 'catalog.json.sha256', 'SHA256SUMS']);
   const payloadChecksums = new Map([['catalog.json', sha256(catalogBytes)]]);
+  const bootstrapPlan = bootstrapSourcePlan(descriptors);
+  if (bootstrapPlan.selected.length > 0) {
+    const fileName = bootstrapArchiveFileName(catalog.catalogVersion);
+    const filePath = path.join(dir, fileName);
+    let data;
+    try {
+      data = await fs.promises.readFile(filePath);
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        throw new Error(`catalog is missing bootstrap archive ${fileName}`);
+      }
+      throw error;
+    }
+    const verified = await verifyBootstrapBundleBuffer(data, descriptors, {
+      label: `bootstrap archive ${fileName}`,
+    });
+    payloadChecksums.set(fileName, verified.sha256);
+    expectedFiles.add(fileName);
+    expectedFiles.add(`${fileName}.sha256`);
+    const sidecar = await fs.promises.readFile(`${filePath}.sha256`, 'utf8');
+    const sidecarMatch = /^([a-f0-9]{64})  (.+)\n$/.exec(sidecar);
+    if (
+      !sidecarMatch ||
+      sidecarMatch[1] !== verified.sha256 ||
+      sidecarMatch[2] !== fileName
+    ) {
+      throw new Error(`${fileName}.sha256 is invalid`);
+    }
+  }
   for (const item of descriptors) {
     const { descriptor } = item;
     const family = catalog.families[descriptor.id];

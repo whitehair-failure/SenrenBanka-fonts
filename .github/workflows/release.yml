@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       bootstrapSourceUrl:
-        description: Optional HTTPS URL for a ZIP containing source/fonts/*
+        description: Optional HTTPS URL for the descriptor-verified bootstrap ZIP
         required: false
         type: string
       bootstrapSourceSha256:
@@ -71,13 +71,35 @@ jobs:
             echo "No bootstrap bundle supplied; every family must declare HTTPS downloads." >&2
           fi
 
+      - name: Verify prepared bootstrap inputs
+        shell: bash
+        env:
+          BOOTSTRAP_SHA256: ${{ inputs.bootstrapSourceSha256 }}
+        run: |
+          if [[ -d .cache/bootstrap ]]; then
+            node scripts/bootstrap-bundle.mjs \
+              --out .cache/bootstrap-verified.zip \
+              --bootstrap-dir .cache/bootstrap
+            reproduced="$(awk '{print $1}' .cache/bootstrap-verified.zip.sha256)"
+            if [[ "$reproduced" != "$BOOTSTRAP_SHA256" ]]; then
+              echo "Published bootstrap bundle is not reproducible: expected $BOOTSTRAP_SHA256, got $reproduced" >&2
+              exit 1
+            fi
+            node scripts/verify-bootstrap.mjs \
+              --bundle .cache/bootstrap-verified.zip \
+              --sha256 "$reproduced"
+          fi
+
       - name: Build catalog (first deterministic run)
         shell: bash
         env:
           CATALOG_VERSION: ${{ inputs.catalogVersion }}
+          BOOTSTRAP_SHA256: ${{ inputs.bootstrapSourceSha256 }}
         run: |
           args=(--out artifacts --catalog-version "$CATALOG_VERSION")
-          if [[ -d .cache/bootstrap ]]; then args+=(--bootstrap-dir .cache/bootstrap); fi
+          if [[ -d .cache/bootstrap ]]; then
+            args+=(--bootstrap-dir .cache/bootstrap --bootstrap-sha256 "$BOOTSTRAP_SHA256")
+          fi
           node scripts/build-catalog.mjs "${args[@]}"
 
       - name: Verify release artifacts
@@ -89,9 +111,12 @@ jobs:
         shell: bash
         env:
           CATALOG_VERSION: ${{ inputs.catalogVersion }}
+          BOOTSTRAP_SHA256: ${{ inputs.bootstrapSourceSha256 }}
         run: |
           args=(--out artifacts-repro --catalog-version "$CATALOG_VERSION")
-          if [[ -d .cache/bootstrap ]]; then args+=(--bootstrap-dir .cache/bootstrap); fi
+          if [[ -d .cache/bootstrap ]]; then
+            args+=(--bootstrap-dir .cache/bootstrap --bootstrap-sha256 "$BOOTSTRAP_SHA256")
+          fi
           node scripts/build-catalog.mjs "${args[@]}"
 
       - name: Compare both build outputs byte-for-byte
@@ -145,6 +170,18 @@ jobs:
         env:
           CATALOG_VERSION: ${{ inputs.catalogVersion }}
         run: npm run release:verify -- --dir artifacts --catalog-version "$CATALOG_VERSION"
+
+      - name: Re-verify bootstrap archive
+        shell: bash
+        env:
+          CATALOG_VERSION: ${{ inputs.catalogVersion }}
+        run: |
+          bootstrap="artifacts/bootstrap-sources-v$CATALOG_VERSION.zip"
+          if [[ -f "$bootstrap" ]]; then
+            node scripts/verify-bootstrap.mjs \
+              --bundle "$bootstrap" \
+              --sha256 "$(awk '{print $1}' "$bootstrap.sha256")"
+          fi
 
       - name: Publish immutable family and catalog releases
         env:

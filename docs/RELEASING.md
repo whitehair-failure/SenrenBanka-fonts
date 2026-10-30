@@ -4,7 +4,8 @@
 
 1. Enable **Immutable Releases** in the GitHub repository settings.
 2. Merge the verified descriptor/toolchain commit.
-3. Prepare a bootstrap bundle if any source has no direct HTTPS download.
+3. Publish or otherwise host a descriptor-verified bootstrap bundle if any
+   source has no direct HTTPS download. No machine-local path is used.
 4. Keep `catalogVersion` distinct when publishing a new catalog snapshot.
 
 The publish script checks the GitHub Immutable Releases API and refuses to run
@@ -16,9 +17,11 @@ when it is disabled.
 npm ci
 npm test
 npm run catalog:validate
-node scripts/build-catalog.mjs --out artifacts --catalog-version 1.0.0 --bootstrap-dir .cache/bootstrap
+npm run bootstrap:build -- --bootstrap-dir .cache/bootstrap --out artifacts/bootstrap-sources-v1.0.0.zip
+npm run bootstrap:verify -- --bundle artifacts/bootstrap-sources-v1.0.0.zip --sha256 "$(awk '{print $1}' artifacts/bootstrap-sources-v1.0.0.zip.sha256)"
+node scripts/build-catalog.mjs --out artifacts --catalog-version 1.0.0 --bootstrap-dir .cache/bootstrap --bootstrap-sha256 "$(awk '{print $1}' artifacts/bootstrap-sources-v1.0.0.zip.sha256)"
 npm run release:verify -- --dir artifacts --catalog-version 1.0.0
-node scripts/build-catalog.mjs --out artifacts-repro --catalog-version 1.0.0 --bootstrap-dir .cache/bootstrap
+node scripts/build-catalog.mjs --out artifacts-repro --catalog-version 1.0.0 --bootstrap-dir .cache/bootstrap --bootstrap-sha256 "$(awk '{print $1}' artifacts/bootstrap-sources-v1.0.0.zip.sha256)"
 npm run release:verify -- --dir artifacts --compare-dir artifacts-repro --catalog-version 1.0.0
 node scripts/publish.mjs --dir artifacts --catalog-version 1.0.0 --target-sha "$(git rev-parse HEAD)" --dry-run
 ```
@@ -39,12 +42,13 @@ Run **Build and publish font catalog** with:
 The workflow:
 
 1. runs tests and descriptor policy checks;
-2. builds and verifies twice;
-3. uploads the artifact set;
-4. re-verifies the downloaded artifact in the write-enabled publish job;
-5. creates all family releases as drafts with their package/source checksums;
-6. creates the catalog release draft;
-7. publishes family releases first and `catalog-v<version>` last.
+2. verifies the supplied bootstrap bundle and reproduces it from extracted input;
+3. builds and verifies twice;
+4. uploads the artifact set, including the bootstrap bundle;
+5. re-verifies the downloaded artifact in the write-enabled publish job;
+6. creates all family releases as drafts with their package/source checksums;
+7. creates the catalog release draft, including the bootstrap bundle;
+8. publishes family releases first and `catalog-v<version>` last.
 
 The catalog is the consumer-visible transaction boundary. If publishing fails
 after some family releases are public, the previous catalog remains in place;
@@ -60,12 +64,20 @@ Family release:
 - `<id>-v<familyVersion>-source.tar.gz`
 - `<id>-v<familyVersion>-source.tar.gz.sha256`
 
+Bootstrap release:
+
+- `bootstrap-v<catalogVersion>`
+- `bootstrap-sources-v<catalogVersion>.zip`
+- `bootstrap-sources-v<catalogVersion>.zip.sha256`
+
 Catalog release:
 
 - `catalog-v<catalogVersion>`
 - `catalog.json`
 - `catalog.json.sha256`
 - `SHA256SUMS`
+- `bootstrap-sources-v<catalogVersion>.zip` and `.sha256` when bootstrap-only
+  sources exist
 
 An existing catalog tag/release is a hard failure. An existing family tag is
 reused only after its published assets are verified byte-for-byte against the

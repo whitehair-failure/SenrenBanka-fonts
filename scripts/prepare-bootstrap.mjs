@@ -2,7 +2,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
+import { fileURLToPath } from 'node:url';
 import { extractZipAll } from './lib/archive.mjs';
+import { verifyBootstrapBundleBuffer } from './lib/bootstrap.mjs';
+import { loadCurrentDescriptors } from './lib/descriptors.mjs';
 import { verifySha256 } from './lib/hash.mjs';
 import { downloadBytes, assertHttpsUrl } from './lib/source.mjs';
 import { assertReplaceableDirectory } from './lib/paths.mjs';
@@ -26,6 +29,13 @@ async function main() {
     data = await downloadBytes(values.url);
   }
   verifySha256(data, values.sha256, 'bootstrap bundle');
+  const descriptors = await loadCurrentDescriptors(
+    fileURLToPath(new URL('..', import.meta.url)),
+  );
+  await verifyBootstrapBundleBuffer(data, descriptors, {
+    label: 'bootstrap bundle',
+    expectedSha256: values.sha256,
+  });
   const out = assertReplaceableDirectory(values.out, {
     label: 'bootstrap output directory',
   });

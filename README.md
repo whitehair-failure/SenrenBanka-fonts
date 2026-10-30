@@ -29,10 +29,18 @@ npm ci
 npm test
 npm run catalog:validate
 
+npm run bootstrap:build -- \
+  --bootstrap-dir .cache/bootstrap \
+  --out bootstrap-sources-v1.0.0.zip
+npm run bootstrap:verify -- \
+  --bundle bootstrap-sources-v1.0.0.zip \
+  --sha256 "<published-bootstrap-sha256>"
+
 node scripts/build-catalog.mjs \
   --out artifacts \
   --catalog-version 1.0.0 \
-  --bootstrap-dir .cache/bootstrap
+  --bootstrap-dir .cache/bootstrap \
+  --bootstrap-sha256 "<published-bootstrap-sha256>"
 
 npm run release:verify -- --dir artifacts --catalog-version 1.0.0
 ```
@@ -63,13 +71,15 @@ that only exist after a build.
 
 | Command | Purpose |
 |---|---|
-| `npm test` | Schema, archive, source, split, package, catalog, and publish tests |
+| `npm test` | Schema, archive, bootstrap, source, split, package, catalog, and publish tests |
 | `npm run catalog:validate` | Descriptor/license policy, generated schemas, and Git hygiene |
+| `npm run bootstrap:build -- --bootstrap-dir <dir> --out <zip>` | Generate a deterministic descriptor-verified bootstrap ZIP |
+| `npm run bootstrap:verify -- --bundle <zip> [--sha256 <digest>]` | Verify exact bootstrap members, hashes, paths, and metadata |
+| `npm run bootstrap:prepare -- --url <url> --sha256 <sha> --out <dir>` | Verify and safely unpack a published bootstrap ZIP |
 | `node scripts/build-family.mjs --id <id> --bootstrap-dir <dir>` | Build one family |
 | `node scripts/build-catalog.mjs --out artifacts` | Build the complete catalog |
 | `npm run release:verify -- --dir artifacts` | Recompute and verify every package pointer |
-| `npm run release:publish -- --dir artifacts --catalog-version <v> --target-sha <sha>` | Create immutable family releases, then the catalog release |
-| `node scripts/prepare-bootstrap.mjs --url <url> --sha256 <sha> --out <dir>` | Safely unpack a controlled bootstrap ZIP |
+| `npm run release:publish -- --dir artifacts --catalog-version <v> --target-sha <sha>` | Create immutable bootstrap/family releases, then the catalog release |
 
 ## Package Contract
 
@@ -93,6 +103,16 @@ source/licenses/*
 The source archive, not the original local snapshot, is the authoritative rebuild
 input for the same descriptor version. See [docs/ARCHIVE-FORMAT.md](docs/ARCHIVE-FORMAT.md).
 
+The bootstrap archive contains only descriptor sources without public URLs:
+
+```text
+bootstrap-sources-v<catalogVersion>.zip
+source/fonts/<fileName>
+```
+
+It is generated deterministically and included in the catalog artifact set. See
+[docs/BOOTSTRAP.md](docs/BOOTSTRAP.md).
+
 ## Release URLs
 
 Consumers compose downloads from:
@@ -102,6 +122,7 @@ https://github.com/whitehair-failure/SenrenBanka-fonts/releases/download/<releas
 ```
 
 - Family tag: `font-<id>-v<version>`
+- Bootstrap tag: `bootstrap-v<catalogVersion>`
 - Catalog tag: `catalog-v<catalogVersion>`
 
 ## Documentation

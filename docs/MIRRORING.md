@@ -21,6 +21,8 @@ For the catalog:
 - `catalog.json`;
 - `catalog.json.sha256`;
 - `SHA256SUMS`.
+- `bootstrap-sources-v<catalogVersion>.zip` and its sidecar when the catalog
+  is the first release that still needs a controlled bootstrap snapshot.
 
 ## Verification
 

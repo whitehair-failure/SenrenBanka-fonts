@@ -105,14 +105,22 @@ export async function createFixtureRepo(descriptors = []) {
   const root = await fs.promises.mkdtemp(path.join(repoRoot, '.cache', 'fixture-repo-'));
   const bootstrap = path.join(root, 'bootstrap');
   await fs.promises.mkdir(path.join(bootstrap, 'source', 'fonts'), { recursive: true });
-  await fs.promises.copyFile(
-    path.join(fixtureFonts, 'fixture-sans.ttf'),
-    path.join(bootstrap, 'source', 'fonts', 'fixture-sans.ttf'),
-  );
-  await fs.promises.copyFile(
-    path.join(fixtureFonts, 'fixture-sans.woff2'),
-    path.join(bootstrap, 'source', 'fonts', 'fixture-sans.woff2'),
-  );
+  for (const item of descriptors) {
+    const descriptor = item?.descriptor ?? item;
+    for (const source of descriptor.source.files) {
+      await fs.promises.mkdir(
+        path.dirname(path.join(bootstrap, ...source.bootstrapKey.split('/'))),
+        { recursive: true },
+      );
+      const fixtureSource = source.fileName.endsWith('.woff2')
+        ? path.join(fixtureFonts, 'fixture-sans.woff2')
+        : path.join(fixtureFonts, 'fixture-sans.ttf');
+      await fs.promises.copyFile(
+        fixtureSource,
+        path.join(bootstrap, ...source.bootstrapKey.split('/')),
+      );
+    }
+  }
   for (const descriptor of descriptors) {
     const licenseDir = path.join(root, 'licenses', descriptor.id);
     await fs.promises.mkdir(licenseDir, { recursive: true });

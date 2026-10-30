@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
+import { bootstrapSourcePlan } from './bootstrap.mjs';
 import { loadAllDescriptors, loadCurrentDescriptors } from './descriptors.mjs';
 import { loadAndVerifyLicenses } from './license.mjs';
 
@@ -89,6 +90,7 @@ export async function validateRepository(
     await loadAndVerifyLicenses(repoRoot, item.descriptor);
   }
   const current = await loadCurrentDescriptors(repoRoot);
+  const bootstrapPlan = bootstrapSourcePlan(current);
   const core = current.filter((item) => item.descriptor.role === 'core-cjk');
   const fixed = current.filter((item) => item.descriptor.role === 'fixed');
   if (core.length === 0) throw new Error('catalog must contain at least one core-cjk family');
@@ -99,5 +101,6 @@ export async function validateRepository(
     currentFamilies: current.length,
     coreFamilies: core.map((item) => item.descriptor.id),
     fixedFamilies: fixed.map((item) => item.descriptor.id),
+    bootstrapOnlySources: bootstrapPlan.selected.length,
   };
 }

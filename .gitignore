@@ -2,6 +2,7 @@ node_modules/
 .cache/
 artifacts/
 artifacts-repro/
+bootstrap-sources*.zip.sha256
 .DS_Store
 Thumbs.db
 *.log

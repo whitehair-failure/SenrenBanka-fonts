@@ -16,6 +16,9 @@
     "test": "node --test",
     "catalog:validate": "node scripts/validate-catalog.mjs",
     "catalog:build": "node scripts/build-catalog.mjs",
+    "bootstrap:build": "node scripts/bootstrap-bundle.mjs",
+    "bootstrap:verify": "node scripts/verify-bootstrap.mjs",
+    "bootstrap:prepare": "node scripts/prepare-bootstrap.mjs",
     "schemas:generate": "node scripts/generate-schemas.mjs",
     "release:verify": "node scripts/verify-release.mjs",
     "release:publish": "node scripts/publish.mjs"

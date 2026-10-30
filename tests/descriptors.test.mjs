@@ -104,4 +104,12 @@ test('workflow verifies and uploads before the publish job runs', async () => {
   assert.match(workflow, /^\s*group: font-catalog-release$/m);
   assert.doesNotMatch(workflow, /^\s*run:.*\$\{\{\s*inputs\./m);
   assert.match(workflow.slice(publishJob), /permissions:\s*\n\s+contents: write/);
+  assert.match(workflow, /node scripts\/bootstrap-bundle\.mjs/);
+  assert.match(workflow, /node scripts\/verify-bootstrap\.mjs/);
+  assert.match(workflow, /bootstrap-sources-v\$CATALOG_VERSION\.zip/);
+  assert.match(workflow, /bootstrapSourceUrl/);
+  assert.match(workflow, /bootstrapSourceSha256/);
+  assert.match(workflow, /--url "\$BOOTSTRAP_URL"/);
+  assert.match(workflow, /--sha256 "\$BOOTSTRAP_SHA256"/);
+  assert.doesNotMatch(workflow, /[A-Za-z]:[\\/]/);
 });

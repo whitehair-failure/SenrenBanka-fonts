@@ -14,9 +14,16 @@ import {
 } from './helpers/fixtures.mjs';
 
 function descriptorsForCatalog() {
+  const secondSource = makeFixedDescriptor({ id: 'fixture-b' }).source.files[0];
+  secondSource.fileName = 'fixture-b.woff2';
+  secondSource.bootstrapKey = 'source/fonts/fixture-b.woff2';
+  const secondDescriptor = makeFixedDescriptor({ id: 'fixture-b' });
+  secondDescriptor.source.files = [secondSource];
+  secondDescriptor.output.variants[0].sourceFile = 'fixture-b.woff2';
+  secondDescriptor.output.variants[0].file = 'fixture-b.woff2';
   return [
     { descriptor: makeFixedDescriptor({ id: 'fixture-a' }) },
-    { descriptor: makeFixedDescriptor({ id: 'fixture-b' }) },
+    { descriptor: secondDescriptor },
   ];
 }
 
@@ -96,5 +103,33 @@ test('catalog verification rejects missing assets, hash drift, version drift, an
   await assert.rejects(
     () => verifyCatalogDirectory({ dir: extraDirectory, descriptors }),
     /non-regular entry/,
+  );
+
+  const missingBootstrap = path.join(fixture.root, 'missing-bootstrap');
+  await fs.promises.cp(outDir, missingBootstrap, { recursive: true });
+  const bootstrapName = 'bootstrap-sources-v1.0.0.zip';
+  await fs.promises.rm(path.join(missingBootstrap, bootstrapName));
+  await assert.rejects(
+    () => verifyCatalogDirectory({ dir: missingBootstrap, descriptors }),
+    /missing bootstrap archive/,
+  );
+});
+
+test('catalog build rejects a bootstrap bundle that differs from the published hash', async (t) => {
+  const descriptors = descriptorsForCatalog();
+  const fixture = await createFixtureRepo(descriptors.map((item) => item.descriptor));
+  t.after(() => fs.promises.rm(fixture.root, { recursive: true, force: true }));
+  await assert.rejects(
+    () =>
+      buildCatalog({
+        repoRoot: fixture.root,
+        descriptors,
+        outDir: path.join(fixture.root, 'artifacts-mismatch'),
+        catalogVersion: '1.0.0',
+        baseUrl: 'https://example.com/fonts/releases/download',
+        bootstrapDir: fixture.bootstrap,
+        expectedBootstrapSha256: '0'.repeat(64),
+      }),
+    /bootstrap bundle SHA-256 mismatch/,
   );
 });

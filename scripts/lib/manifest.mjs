@@ -24,6 +24,14 @@ export function sourceArchiveFileName(id, version) {
   return `${id}-v${version}-source.tar.gz`;
 }
 
+export function bootstrapArchiveFileName(catalogVersion) {
+  return `bootstrap-sources-v${catalogVersion}.zip`;
+}
+
+export function bootstrapReleaseTag(catalogVersion) {
+  return `bootstrap-v${catalogVersion}`;
+}
+
 export function familyReleaseTag(id, version) {
   return `font-${id}-v${version}`;
 }
