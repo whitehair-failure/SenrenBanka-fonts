@@ -55,6 +55,9 @@ export async function buildCatalog({
   }
   try {
     const bootstrapPlan = bootstrapSourcePlan(descriptors);
+    if (expectedBootstrapSha256 && bootstrapPlan.selected.length === 0) {
+      throw new Error('bootstrap SHA-256 was provided but no bootstrap-only sources exist');
+    }
     if (bootstrapDir && bootstrapPlan.selected.length > 0) {
       onProgress({ phase: 'bootstrap', files: bootstrapPlan.selected.length });
       const bundle = await buildBootstrapBundle({

@@ -323,4 +323,107 @@ test('catalog release uploads bootstrap archive when it exists in the artifact s
         call.args[2] === 'bootstrap-v1.0.0',
     ),
   );
+  const createIndex = (tag) =>
+    runner.calls.findIndex(
+      (call) =>
+        call.args[0] === 'release' &&
+        call.args[1] === 'create' &&
+        call.args[2] === tag,
+    );
+  assert.ok(createIndex('bootstrap-v1.0.0') < createIndex('font-fixture-a-v1.0.0'));
+  assert.ok(createIndex('font-fixture-a-v1.0.0') < createIndex('catalog-v1.0.0'));
+  const publishOrder = runner.calls
+    .filter((call) => call.args[0] === 'release' && call.args[1] === 'edit')
+    .map((call) => call.args[2]);
+  assert.deepEqual(publishOrder, [
+    'bootstrap-v1.0.0',
+    'font-fixture-a-v1.0.0',
+    'catalog-v1.0.0',
+  ]);
+});
+
+test('publish rejects an incomplete bootstrap artifact pair before preflight', async (t) => {
+  const dir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'font-publish-bootstrap-pair-'));
+  t.after(() => fs.promises.rm(dir, { recursive: true, force: true }));
+  await fs.promises.writeFile(
+    path.join(dir, 'bootstrap-sources-v1.0.0.zip'),
+    'fixture',
+  );
+  await assert.rejects(
+    () =>
+      publishCatalog({
+        ...baseOptions,
+        dir,
+        run: async () => {
+          throw new Error('runner must not be invoked');
+        },
+      }),
+    /must be present together/,
+  );
+});
+
+test('family create failure cleans up a previously created bootstrap draft', async (t) => {
+  const dir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'font-publish-bootstrap-fail-'));
+  t.after(() => fs.promises.rm(dir, { recursive: true, force: true }));
+  const { catalog, bootstrapFiles } = bootstrapReleaseFixture();
+  for (const fileName of [
+    'catalog.json',
+    'catalog.json.sha256',
+    'SHA256SUMS',
+    ...bootstrapFiles,
+    catalog.families['fixture-a'].package.fileName,
+    `${catalog.families['fixture-a'].package.fileName}.sha256`,
+    catalog.families['fixture-a'].source.fileName,
+    `${catalog.families['fixture-a'].source.fileName}.sha256`,
+  ]) {
+    await fs.promises.writeFile(path.join(dir, fileName), `fixture:${fileName}\n`);
+  }
+  const calls = [];
+  const runner = {
+    async run(call) {
+      calls.push(call);
+      const args = call.args;
+      if (args[0] === 'api' && args[1]?.includes('immutable-releases')) {
+        return { status: 0, stdout: 'true\n', stderr: '' };
+      }
+      if (args[0] === 'api' && args[1]?.includes('/git/ref/tags/')) {
+        return { status: 1, stdout: '', stderr: 'HTTP 404: Not Found' };
+      }
+      if (args[0] === 'release' && args[1] === 'view') {
+        if (args.includes('isDraft') && args[2] === 'bootstrap-v1.0.0') {
+          return { status: 0, stdout: '{"isDraft":true}\n', stderr: '' };
+        }
+        return { status: 1, stdout: '', stderr: 'release not found' };
+      }
+      if (
+        args[0] === 'release' &&
+        args[1] === 'create' &&
+        args[2] === 'font-fixture-a-v1.0.0'
+      ) {
+        return { status: 1, stdout: '', stderr: 'family upload failed' };
+      }
+      return { status: 0, stdout: '', stderr: '' };
+    },
+  };
+  await assert.rejects(
+    () => publishCatalog({ ...baseOptions, dir, catalog, run: runner.run }),
+    /failed to create draft release font-fixture-a/,
+  );
+  assert.ok(
+    calls.some(
+      (call) =>
+        call.args[0] === 'release' &&
+        call.args[1] === 'delete' &&
+        call.args[2] === 'bootstrap-v1.0.0',
+    ),
+  );
+  assert.equal(
+    calls.some(
+      (call) =>
+        call.args[0] === 'release' &&
+        call.args[1] === 'create' &&
+        call.args[2] === 'catalog-v1.0.0',
+    ),
+    false,
+  );
 });

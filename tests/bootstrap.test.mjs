@@ -7,6 +7,8 @@ import {
   buildBootstrapBundle,
   verifyBootstrapBundleBuffer,
 } from '../scripts/lib/bootstrap.mjs';
+import { readTar } from '../scripts/lib/archive.mjs';
+import { buildFamily } from '../scripts/lib/build-family.mjs';
 import { createDeterministicZip, readZipEntries } from '../scripts/lib/zip.mjs';
 import {
   createFixtureRepo,
@@ -64,6 +66,39 @@ test('bootstrap bundle includes only no-download sources in canonical sorted pat
   assert.deepEqual(first.excluded, [extraPublic.bootstrapKey]);
   const verified = await verifyBootstrapBundleBuffer(first.data, [descriptor]);
   assert.deepEqual(verified.files.map((file) => file.path), [source.bootstrapKey]);
+});
+
+test('family source archives reproduce the initial bootstrap bundle', async (t) => {
+  const descriptor = bootstrapOnlyDescriptor();
+  const fixture = await createFixtureRepo([descriptor]);
+  t.after(() => fs.promises.rm(fixture.root, { recursive: true, force: true }));
+  const initial = await buildBootstrapBundle({
+    bootstrapDir: fixture.bootstrap,
+    descriptors: [descriptor],
+  });
+  const built = await buildFamily({
+    repoRoot: fixture.root,
+    descriptor,
+    bootstrapDir: fixture.bootstrap,
+  });
+  const archiveBootstrap = path.join(fixture.root, 'source-archive-bootstrap');
+  for (const entry of readTar(built.sourceData, {
+    strictDeterministic: true,
+    requireGzip: true,
+  })) {
+    if (!entry.path.startsWith('source/fonts/')) continue;
+    await writeBootstrapFile(
+      archiveBootstrap,
+      entry.path,
+      entry.data,
+    );
+  }
+  const rebuilt = await buildBootstrapBundle({
+    bootstrapDir: archiveBootstrap,
+    descriptors: [descriptor],
+  });
+  assert.deepEqual(rebuilt.data, initial.data);
+  assert.equal(rebuilt.sha256, initial.sha256);
 });
 
 test('bootstrap generation rejects missing, undeclared, tampered, and non-regular inputs', async (t) => {
@@ -281,6 +316,17 @@ test('bootstrap verifier rejects non-normalized ZIP timestamps', async (t) => {
   await assert.rejects(
     () => verifyBootstrapBundleBuffer(unnormalized, [descriptor]),
     /timestamp is not normalized/,
+  );
+
+  const original = await buildBootstrapBundle({
+    bootstrapDir: fixture.bootstrap,
+    descriptors: [descriptor],
+  });
+  const localTimestamp = Buffer.from(original.data);
+  localTimestamp.writeUInt16LE(1, 10);
+  await assert.rejects(
+    () => verifyBootstrapBundleBuffer(localTimestamp, [descriptor]),
+    /canonical ZIP output/,
   );
 });
 

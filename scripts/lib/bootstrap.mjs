@@ -215,6 +215,15 @@ export async function verifyBootstrapBundleBuffer(
     }
     verifySha256(data, source.sha256, `${label} ${source.path}`);
   }
+  const canonical = createDeterministicZip(
+    plan.selected.map((source) => ({
+      path: source.path,
+      data: actual.get(source.path),
+    })),
+  );
+  if (!Buffer.from(buffer).equals(canonical)) {
+    throw new Error(`${label} is not byte-for-byte canonical ZIP output`);
+  }
   return {
     sha256: sha256(buffer),
     size: buffer.length,

@@ -38,26 +38,36 @@ async function main() {
   const out = path.resolve(values.out);
   const outDir = path.dirname(out);
   await fs.promises.mkdir(outDir, { recursive: true });
-  for (const target of [out, `${out}.sha256`]) {
+  const targets = [out, `${out}.sha256`];
+  for (const target of targets) {
     try {
       const stat = await fs.promises.lstat(target);
       if (stat.isSymbolicLink() || !stat.isFile()) {
         throw new Error(`bootstrap output must be a regular file: ${target}`);
       }
-      await fs.promises.rm(target);
     } catch (error) {
       if (error.code !== 'ENOENT') throw error;
     }
   }
   const temporary = `${out}.partial-${process.pid}`;
+  const temporarySidecar = `${out}.sha256.partial-${process.pid}`;
+  let zipCommitted = false;
+  let fullyCommitted = false;
   try {
     const result = await buildBootstrapBundle({
       bootstrapDir: path.resolve(values['bootstrap-dir']),
       descriptors,
     });
     await fs.promises.writeFile(temporary, result.data);
+    await fs.promises.writeFile(
+      temporarySidecar,
+      sidecarContent(result.sha256, path.basename(out)),
+    );
+    for (const target of targets) await fs.promises.rm(target, { force: true });
     await fs.promises.rename(temporary, out);
-    await fs.promises.writeFile(`${out}.sha256`, sidecarContent(result.sha256, path.basename(out)));
+    zipCommitted = true;
+    await fs.promises.rename(temporarySidecar, `${out}.sha256`);
+    fullyCommitted = true;
     process.stdout.write(
       `${JSON.stringify(
         {
@@ -73,6 +83,8 @@ async function main() {
     );
   } catch (error) {
     await fs.promises.rm(temporary, { force: true });
+    await fs.promises.rm(temporarySidecar, { force: true });
+    if (zipCommitted && !fullyCommitted) await fs.promises.rm(out, { force: true });
     throw error;
   }
 }

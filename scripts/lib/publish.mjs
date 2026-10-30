@@ -130,7 +130,12 @@ export async function publishCatalog({
     path.join(dir, bootstrapName),
     path.join(dir, `${bootstrapName}.sha256`),
   ];
-  if (fs.existsSync(bootstrapFiles[0])) {
+  const hasBootstrap = fs.existsSync(bootstrapFiles[0]);
+  const hasBootstrapSidecar = fs.existsSync(bootstrapFiles[1]);
+  if (hasBootstrap !== hasBootstrapSidecar) {
+    throw new Error('bootstrap archive and checksum sidecar must be present together');
+  }
+  if (hasBootstrap) {
     releases.unshift({
       tag: bootstrapReleaseTag(catalogVersion),
       files: bootstrapFiles,

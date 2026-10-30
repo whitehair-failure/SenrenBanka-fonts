@@ -8,6 +8,7 @@ import {
   loadCurrentDescriptors,
 } from '../scripts/lib/descriptors.mjs';
 import { loadAndVerifyLicenses } from '../scripts/lib/license.mjs';
+import { bootstrapSourcePlan } from '../scripts/lib/bootstrap.mjs';
 import { assertNoTrackedFontBinaries } from '../scripts/lib/validate.mjs';
 import { schemas } from '../scripts/lib/schema.mjs';
 import { stableStringify } from '../scripts/lib/json.mjs';
@@ -26,6 +27,9 @@ test('initial catalog describes exactly the 20 local-provider families', async (
     .sort();
   assert.deepEqual(core, ['ark-pixel-12px', 'lxgw-wenkai', 'zhuque-fangsong']);
   assert.equal(descriptors.filter((item) => item.descriptor.role === 'fixed').length, 17);
+  const bootstrapPlan = bootstrapSourcePlan(descriptors);
+  assert.equal(bootstrapPlan.selected.length, 12);
+  assert.ok(bootstrapPlan.selected.every((source) => !source.hasDownload));
   for (const item of descriptors) {
     const text = JSON.stringify(item.descriptor);
     assert.doesNotMatch(text, /F:\\\\|file:\/\//i);
@@ -111,5 +115,6 @@ test('workflow verifies and uploads before the publish job runs', async () => {
   assert.match(workflow, /bootstrapSourceSha256/);
   assert.match(workflow, /--url "\$BOOTSTRAP_URL"/);
   assert.match(workflow, /--sha256 "\$BOOTSTRAP_SHA256"/);
+  assert.match(workflow, /Bootstrap sidecar does not match the workflow input hash/);
   assert.doesNotMatch(workflow, /[A-Za-z]:[\\/]/);
 });

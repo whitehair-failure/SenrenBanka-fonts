@@ -92,6 +92,11 @@ archives from an earlier family release: copy their `source/fonts/` entries into
 a clean controlled directory (without archive manifests or licenses) and pass
 that directory as `--bootstrap-dir`.
 
+The bootstrap release is a seed, not a permanent upstream. Once family source
+archives exist for the descriptor versions, regenerate the working bootstrap
+directory from those archives and verify that it reproduces the same bundle
+SHA-256. Later catalogs must not depend on an unpublished local snapshot.
+
 ## Offline Build
 
 ```bash

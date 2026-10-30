@@ -133,3 +133,26 @@ test('catalog build rejects a bootstrap bundle that differs from the published h
     /bootstrap bundle SHA-256 mismatch/,
   );
 });
+
+test('catalog build rejects a bootstrap SHA when every source has a public download', async (t) => {
+  const descriptor = makeFixedDescriptor({ id: 'fixture-public' });
+  descriptor.source.files[0].download = {
+    url: 'https://example.com/fixture-sans.woff2',
+    sha256: descriptor.source.files[0].sha256,
+  };
+  const fixture = await createFixtureRepo([descriptor]);
+  t.after(() => fs.promises.rm(fixture.root, { recursive: true, force: true }));
+  await assert.rejects(
+    () =>
+      buildCatalog({
+        repoRoot: fixture.root,
+        descriptors: [{ descriptor }],
+        outDir: path.join(fixture.root, 'artifacts-unexpected-bootstrap'),
+        catalogVersion: '1.0.0',
+        baseUrl: 'https://example.com/fonts/releases/download',
+        bootstrapDir: fixture.bootstrap,
+        expectedBootstrapSha256: 'a'.repeat(64),
+      }),
+    /no bootstrap-only sources/,
+  );
+});

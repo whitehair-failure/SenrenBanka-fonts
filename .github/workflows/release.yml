@@ -175,12 +175,21 @@ jobs:
         shell: bash
         env:
           CATALOG_VERSION: ${{ inputs.catalogVersion }}
+          BOOTSTRAP_SHA256: ${{ inputs.bootstrapSourceSha256 }}
         run: |
           bootstrap="artifacts/bootstrap-sources-v$CATALOG_VERSION.zip"
           if [[ -f "$bootstrap" ]]; then
+            sidecar_sha256="$(awk '{print $1}' "$bootstrap.sha256")"
+            if [[ -n "$BOOTSTRAP_SHA256" && "$sidecar_sha256" != "$BOOTSTRAP_SHA256" ]]; then
+              echo "Bootstrap sidecar does not match the workflow input hash" >&2
+              exit 1
+            fi
             node scripts/verify-bootstrap.mjs \
               --bundle "$bootstrap" \
-              --sha256 "$(awk '{print $1}' "$bootstrap.sha256")"
+              --sha256 "$sidecar_sha256"
+          elif [[ -n "$BOOTSTRAP_SHA256" ]]; then
+            echo "Workflow received a bootstrap hash but the artifact set has no bootstrap archive" >&2
+            exit 1
           fi
 
       - name: Publish immutable family and catalog releases
