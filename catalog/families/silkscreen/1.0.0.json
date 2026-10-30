@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "id": "silkscreen",
+  "familyName": "Silkscreen",
+  "sourceFamilyName": "Silkscreen",
+  "role": "fixed",
+  "version": "1.0.0",
+  "source": {
+    "project": "Silkscreen",
+    "version": "@fontsource/silkscreen@5.3.0",
+    "url": "https://github.com/googlefonts/silkscreen",
+    "retrievedAt": "2026-10-30",
+    "files": [
+      {
+        "fileName": "silkscreen-latin-400-normal.woff2",
+        "size": 8404,
+        "sha256": "e6c72ea4702249202bcdd79d3343057e4e25ef1f04e3fcffd8602ab53b40b4cc",
+        "bootstrapKey": "source/fonts/silkscreen-latin-400-normal.woff2",
+        "download": {
+          "url": "https://cdn.jsdelivr.net/npm/@fontsource/silkscreen@5.3.0/files/silkscreen-latin-400-normal.woff2",
+          "sha256": "e6c72ea4702249202bcdd79d3343057e4e25ef1f04e3fcffd8602ab53b40b4cc"
+        }
+      },
+      {
+        "fileName": "silkscreen-latin-700-normal.woff2",
+        "size": 7524,
+        "sha256": "5741b7f01a127f40ed70281fa2f686e8fc2cfe241930a120e4d1a1cebe78f995",
+        "bootstrapKey": "source/fonts/silkscreen-latin-700-normal.woff2",
+        "download": {
+          "url": "https://cdn.jsdelivr.net/npm/@fontsource/silkscreen@5.3.0/files/silkscreen-latin-700-normal.woff2",
+          "sha256": "5741b7f01a127f40ed70281fa2f686e8fc2cfe241930a120e4d1a1cebe78f995"
+        }
+      }
+    ],
+    "revision": "@fontsource/silkscreen@5.3.0"
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-10-30",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/googlefonts/silkscreen",
+    "files": [
+      {
+        "name": "LICENSE.txt",
+        "sha256": "5e647e94c4b72dc6c92dabfabb3c32225fbeff0f5f9e38db93c118b5bcb85d0c"
+      }
+    ],
+    "reservedFontNames": [],
+    "rfn": {
+      "status": "not-applicable",
+      "basis": "The reviewed license text declares no Reserved Font Name."
+    }
+  },
+  "output": {
+    "type": "fixed",
+    "variants": [
+      {
+        "sourceFile": "silkscreen-latin-400-normal.woff2",
+        "file": "silkscreen-latin-400-normal.woff2",
+        "weight": "400",
+        "style": "normal",
+        "display": "swap"
+      },
+      {
+        "sourceFile": "silkscreen-latin-700-normal.woff2",
+        "file": "silkscreen-latin-700-normal.woff2",
+        "weight": "700",
+        "style": "normal",
+        "display": "swap"
+      }
+    ]
+  },
+  "cssVariable": "--font-silkscreen",
+  "fallbacks": [
+    "Courier New",
+    "Courier"
+  ],
+  "provenance": {
+    "retrievedAt": "2026-10-30",
+    "processing": "Fix the source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Bootstrap source is the current SenrenBanka production WOFF2 snapshot; the published source archive becomes the authoritative rebuild input for this version."
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "id": "ark-pixel-12px",
+  "familyName": "Ark Pixel 12px",
+  "sourceFamilyName": "Ark Pixel 12px Mono zh-Hans",
+  "role": "core-cjk",
+  "version": "1.0.0",
+  "source": {
+    "project": "Ark Pixel Font",
+    "version": "2026.10.16",
+    "url": "https://github.com/TakWolf/ark-pixel-font",
+    "revision": "2026.10.16",
+    "retrievedAt": "2026-10-30",
+    "files": [
+      {
+        "fileName": "ark-pixel-12px-monospaced-zh_hans.otf",
+        "size": 3607968,
+        "sha256": "cefbece3be2344964b782449af277d272015c8728ea93ffeb436e8e709653b56",
+        "bootstrapKey": "source/fonts/ark-pixel-12px-monospaced-zh_hans.otf",
+        "download": {
+          "url": "https://github.com/TakWolf/ark-pixel-font/releases/download/2026.10.16/ark-pixel-font-12px-monospaced-otf-v2026.10.16.zip",
+          "sha256": "6fd8fed313e23d01ce46482599e4aa87370c221fd6d59db411a8b7ace62d1e93",
+          "archiveMember": "ark-pixel-12px-monospaced-zh_hans.otf"
+        }
+      }
+    ]
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-10-30",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/TakWolf/ark-pixel-font",
+    "files": [
+      {
+        "name": "LICENSE.txt",
+        "sha256": "3ab41567e68e3988ba1ef16dd2644eca95ca5648ea12e7d46e6287fc0bbe5aee"
+      }
+    ],
+    "reservedFontNames": [],
+    "rfn": {
+      "status": "not-applicable",
+      "basis": "The reviewed license text declares no Reserved Font Name."
+    }
+  },
+  "output": {
+    "type": "core-cjk",
+    "sourceFile": "ark-pixel-12px-monospaced-zh_hans.otf",
+    "weight": "400",
+    "style": "normal",
+    "display": "swap",
+    "chunkSize": 71680,
+    "languageAreas": true,
+    "fontFeature": true
+  },
+  "cssVariable": "--font-ark-pixel",
+  "fallbacks": [
+    "SimSun",
+    "monospace"
+  ],
+  "provenance": {
+    "retrievedAt": "2026-10-30",
+    "processing": "Fix the source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Bootstrap source is the pinned upstream release asset."
+  }
+}

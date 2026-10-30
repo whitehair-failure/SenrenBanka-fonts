@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "id": "blackout",
+  "familyName": "Blackout 2AM",
+  "sourceFamilyName": "Blackout 2AM",
+  "role": "fixed",
+  "version": "1.0.0",
+  "source": {
+    "project": "League of Moveable Type - Blackout",
+    "version": "web snapshot 2026-10-30",
+    "url": "https://github.com/theleagueof/blackout",
+    "retrievedAt": "2026-10-30",
+    "files": [
+      {
+        "fileName": "Blackout2AM.woff2",
+        "size": 8868,
+        "sha256": "ae856ad39395b609c042641953b2801813bfb6f85349f1dfdc437b72a49f193f",
+        "bootstrapKey": "source/fonts/Blackout2AM.woff2"
+      }
+    ]
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-10-30",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/theleagueof/blackout/blob/master/Open%20Font%20License.markdown",
+    "files": [
+      {
+        "name": "LICENSE.txt",
+        "sha256": "a7eadc73443ad1c08402f27f679f881ad85039ec2a4d2b50a179099f3bca7ee1"
+      }
+    ],
+    "reservedFontNames": [
+      "Blackout"
+    ],
+    "rfn": {
+      "status": "unmodified-distribution",
+      "basis": "The distribution pipeline copies the supplied WOFF2 bytes without modification."
+    }
+  },
+  "output": {
+    "type": "fixed",
+    "variants": [
+      {
+        "sourceFile": "Blackout2AM.woff2",
+        "file": "Blackout2AM.woff2",
+        "weight": "400",
+        "style": "normal",
+        "display": "swap"
+      }
+    ]
+  },
+  "cssVariable": "--font-blackout",
+  "fallbacks": [
+    "Impact",
+    "Arial Black",
+    "sans-serif"
+  ],
+  "provenance": {
+    "retrievedAt": "2026-10-30",
+    "processing": "Fix the source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Bootstrap source is the current SenrenBanka production WOFF2 snapshot; the published source archive becomes the authoritative rebuild input for this version."
+  }
+}

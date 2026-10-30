@@ -1,0 +1,115 @@
+{
+  "$id": "https://github.com/whitehair-failure/SenrenBanka-fonts/schemas/catalog.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "baseUrl": {
+      "format": "uri",
+      "type": "string"
+    },
+    "catalogVersion": {
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$",
+      "type": "string"
+    },
+    "families": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "package": {
+            "additionalProperties": false,
+            "properties": {
+              "fileName": {
+                "maxLength": 200,
+                "type": "string"
+              },
+              "releaseTag": {
+                "pattern": "^[a-z][a-z0-9-]*-v\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "size": {
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "releaseTag",
+              "fileName",
+              "sha256",
+              "size"
+            ],
+            "type": "object"
+          },
+          "role": {
+            "enum": [
+              "fixed",
+              "core-cjk"
+            ],
+            "type": "string"
+          },
+          "source": {
+            "additionalProperties": false,
+            "properties": {
+              "fileName": {
+                "maxLength": 200,
+                "type": "string"
+              },
+              "releaseTag": {
+                "pattern": "^[a-z][a-z0-9-]*-v\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?$",
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "size": {
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "releaseTag",
+              "fileName",
+              "sha256",
+              "size"
+            ],
+            "type": "object"
+          },
+          "version": {
+            "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "version",
+          "role",
+          "package",
+          "source"
+        ],
+        "type": "object"
+      },
+      "propertyNames": {
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+        "type": "string"
+      },
+      "type": "object"
+    },
+    "schemaVersion": {
+      "const": 1,
+      "type": "number"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "catalogVersion",
+    "baseUrl",
+    "families"
+  ],
+  "title": "SenrenBanka font catalog v1",
+  "type": "object"
+}

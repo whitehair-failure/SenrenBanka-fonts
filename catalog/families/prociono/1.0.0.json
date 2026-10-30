@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "id": "prociono",
+  "familyName": "Prociono",
+  "sourceFamilyName": "Prociono",
+  "role": "fixed",
+  "version": "1.0.0",
+  "source": {
+    "project": "Prociono",
+    "version": "@fontsource/prociono@5.3.0",
+    "url": "https://github.com/theleagueof/prociono",
+    "retrievedAt": "2026-10-30",
+    "files": [
+      {
+        "fileName": "prociono-latin-400-normal.woff2",
+        "size": 11928,
+        "sha256": "35b81bef9840c98bfda7a7bdf6197cc33baebd4436b4c9ffc03a9c3d877126c7",
+        "bootstrapKey": "source/fonts/prociono-latin-400-normal.woff2",
+        "download": {
+          "url": "https://cdn.jsdelivr.net/npm/@fontsource/prociono@5.3.0/files/prociono-latin-400-normal.woff2",
+          "sha256": "35b81bef9840c98bfda7a7bdf6197cc33baebd4436b4c9ffc03a9c3d877126c7"
+        }
+      }
+    ],
+    "revision": "@fontsource/prociono@5.3.0"
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-10-30",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/theleagueof/prociono",
+    "files": [
+      {
+        "name": "LICENSE.txt",
+        "sha256": "2f249ae72eaa66217360bd42ec3415d65edd38843aca12d8ad8a234712385cce"
+      }
+    ],
+    "reservedFontNames": [],
+    "rfn": {
+      "status": "not-applicable",
+      "basis": "The reviewed license text declares no Reserved Font Name."
+    }
+  },
+  "output": {
+    "type": "fixed",
+    "variants": [
+      {
+        "sourceFile": "prociono-latin-400-normal.woff2",
+        "file": "prociono-latin-400-normal.woff2",
+        "weight": "400",
+        "style": "normal",
+        "display": "swap"
+      }
+    ]
+  },
+  "cssVariable": "--font-prociono",
+  "fallbacks": [
+    "Georgia",
+    "serif"
+  ],
+  "provenance": {
+    "retrievedAt": "2026-10-30",
+    "processing": "Fix the source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Bootstrap source is the current SenrenBanka production WOFF2 snapshot; the published source archive becomes the authoritative rebuild input for this version."
+  }
+}

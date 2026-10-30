@@ -1,0 +1,198 @@
+{
+  "schemaVersion": 1,
+  "id": "sorts-mill-goudy",
+  "familyName": "Sorts Mill Goudy",
+  "sourceFamilyName": "Sorts Mill Goudy",
+  "role": "fixed",
+  "version": "1.0.0",
+  "source": {
+    "project": "Sorts Mill Goudy",
+    "version": "@fontsource/sorts-mill-goudy@5.3.0",
+    "url": "https://github.com/theleagueof/sorts-mill-goudy",
+    "retrievedAt": "2026-10-30",
+    "files": [
+      {
+        "fileName": "sorts-mill-goudy-latin-400-normal.woff2",
+        "size": 22804,
+        "sha256": "7a1ef9b6f47c9f8d0afbce1dbe6e4afe2b632e8db12d262b51d46a4b37dca079",
+        "bootstrapKey": "source/fonts/sorts-mill-goudy-latin-400-normal.woff2",
+        "download": {
+          "url": "https://cdn.jsdelivr.net/npm/@fontsource/sorts-mill-goudy@5.3.0/files/sorts-mill-goudy-latin-400-normal.woff2",
+          "sha256": "7a1ef9b6f47c9f8d0afbce1dbe6e4afe2b632e8db12d262b51d46a4b37dca079"
+        }
+      },
+      {
+        "fileName": "sorts-mill-goudy-latin-400-italic.woff2",
+        "size": 24744,
+        "sha256": "83cf9e4071aebf2e8b05679c1a6574ba806de4efdc80626f18b9dd95176e4f44",
+        "bootstrapKey": "source/fonts/sorts-mill-goudy-latin-400-italic.woff2",
+        "download": {
+          "url": "https://cdn.jsdelivr.net/npm/@fontsource/sorts-mill-goudy@5.3.0/files/sorts-mill-goudy-latin-400-italic.woff2",
+          "sha256": "83cf9e4071aebf2e8b05679c1a6574ba806de4efdc80626f18b9dd95176e4f44"
+        }
+      },
+      {
+        "fileName": "sorts-mill-goudy-latin-ext-400-normal.woff2",
+        "size": 10232,
+        "sha256": "dcfb218498e45225b6ea66a03bf8a5ca564a3f756b2ce8f62d6be5746a5fdb9d",
+        "bootstrapKey": "source/fonts/sorts-mill-goudy-latin-ext-400-normal.woff2",
+        "download": {
+          "url": "https://cdn.jsdelivr.net/npm/@fontsource/sorts-mill-goudy@5.3.0/files/sorts-mill-goudy-latin-ext-400-normal.woff2",
+          "sha256": "dcfb218498e45225b6ea66a03bf8a5ca564a3f756b2ce8f62d6be5746a5fdb9d"
+        }
+      },
+      {
+        "fileName": "sorts-mill-goudy-latin-ext-400-italic.woff2",
+        "size": 10732,
+        "sha256": "1f821465b4b3f67a7c11affe8c780f03445ab7c69c58b7d5933f78ca8ab41af9",
+        "bootstrapKey": "source/fonts/sorts-mill-goudy-latin-ext-400-italic.woff2",
+        "download": {
+          "url": "https://cdn.jsdelivr.net/npm/@fontsource/sorts-mill-goudy@5.3.0/files/sorts-mill-goudy-latin-ext-400-italic.woff2",
+          "sha256": "1f821465b4b3f67a7c11affe8c780f03445ab7c69c58b7d5933f78ca8ab41af9"
+        }
+      }
+    ],
+    "revision": "@fontsource/sorts-mill-goudy@5.3.0"
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-10-30",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/theleagueof/sorts-mill-goudy",
+    "files": [
+      {
+        "name": "LICENSE.txt",
+        "sha256": "b36fa6ab76eaacc14c25268c368fe3a70b1240771d90f5572cd896ba5241a6ef"
+      }
+    ],
+    "reservedFontNames": [],
+    "rfn": {
+      "status": "not-applicable",
+      "basis": "The reviewed license text declares no Reserved Font Name."
+    }
+  },
+  "output": {
+    "type": "fixed",
+    "variants": [
+      {
+        "sourceFile": "sorts-mill-goudy-latin-400-normal.woff2",
+        "file": "sorts-mill-goudy-latin-400-normal.woff2",
+        "weight": "400",
+        "style": "normal",
+        "display": "swap",
+        "unicodeRange": [
+          "U+0000-00FF",
+          "U+0131",
+          "U+0152-0153",
+          "U+02BB-02BC",
+          "U+02C6",
+          "U+02DA",
+          "U+02DC",
+          "U+0304",
+          "U+0308",
+          "U+0329",
+          "U+2000-206F",
+          "U+20AC",
+          "U+2122",
+          "U+2191",
+          "U+2193",
+          "U+2212",
+          "U+2215",
+          "U+FEFF",
+          "U+FFFD"
+        ]
+      },
+      {
+        "sourceFile": "sorts-mill-goudy-latin-400-italic.woff2",
+        "file": "sorts-mill-goudy-latin-400-italic.woff2",
+        "weight": "400",
+        "style": "italic",
+        "display": "swap",
+        "unicodeRange": [
+          "U+0000-00FF",
+          "U+0131",
+          "U+0152-0153",
+          "U+02BB-02BC",
+          "U+02C6",
+          "U+02DA",
+          "U+02DC",
+          "U+0304",
+          "U+0308",
+          "U+0329",
+          "U+2000-206F",
+          "U+20AC",
+          "U+2122",
+          "U+2191",
+          "U+2193",
+          "U+2212",
+          "U+2215",
+          "U+FEFF",
+          "U+FFFD"
+        ]
+      },
+      {
+        "sourceFile": "sorts-mill-goudy-latin-ext-400-normal.woff2",
+        "file": "sorts-mill-goudy-latin-ext-400-normal.woff2",
+        "weight": "400",
+        "style": "normal",
+        "display": "swap",
+        "unicodeRange": [
+          "U+0100-02BA",
+          "U+02BD-02C5",
+          "U+02C7-02CC",
+          "U+02CE-02D7",
+          "U+02DD-02FF",
+          "U+0304",
+          "U+0308",
+          "U+0329",
+          "U+1D00-1DBF",
+          "U+1E00-1E9F",
+          "U+1EF2-1EFF",
+          "U+2020",
+          "U+20A0-20AB",
+          "U+20AD-20C0",
+          "U+2113",
+          "U+2C60-2C7F",
+          "U+A720-A7FF"
+        ]
+      },
+      {
+        "sourceFile": "sorts-mill-goudy-latin-ext-400-italic.woff2",
+        "file": "sorts-mill-goudy-latin-ext-400-italic.woff2",
+        "weight": "400",
+        "style": "italic",
+        "display": "swap",
+        "unicodeRange": [
+          "U+0100-02BA",
+          "U+02BD-02C5",
+          "U+02C7-02CC",
+          "U+02CE-02D7",
+          "U+02DD-02FF",
+          "U+0304",
+          "U+0308",
+          "U+0329",
+          "U+1D00-1DBF",
+          "U+1E00-1E9F",
+          "U+1EF2-1EFF",
+          "U+2020",
+          "U+20A0-20AB",
+          "U+20AD-20C0",
+          "U+2113",
+          "U+2C60-2C7F",
+          "U+A720-A7FF"
+        ]
+      }
+    ]
+  },
+  "cssVariable": "--font-sorts-mill-goudy",
+  "fallbacks": [
+    "Georgia",
+    "Times New Roman"
+  ],
+  "provenance": {
+    "retrievedAt": "2026-10-30",
+    "processing": "Fix the source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Bootstrap source is the current SenrenBanka production WOFF2 snapshot; the published source archive becomes the authoritative rebuild input for this version."
+  }
+}

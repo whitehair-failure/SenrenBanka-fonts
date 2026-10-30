@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "id": "tt2020-style-d",
+  "familyName": "TT2020 Style D",
+  "sourceFamilyName": "TT2020 Style D",
+  "role": "fixed",
+  "version": "1.0.0",
+  "source": {
+    "project": "TT2020",
+    "version": "web snapshot 2026-10-30",
+    "url": "https://github.com/ctrlcctrlv/TT2020",
+    "retrievedAt": "2026-10-30",
+    "files": [
+      {
+        "fileName": "TT2020StyleD-Regular-subset.woff2",
+        "size": 310900,
+        "sha256": "330b6f704c36afee54518ed257556047671f54f96ce91636b3f5a94b3d8c11f5",
+        "bootstrapKey": "source/fonts/TT2020StyleD-Regular-subset.woff2"
+      }
+    ]
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-10-30",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/ctrlcctrlv/TT2020/blob/master/LICENSE",
+    "files": [
+      {
+        "name": "LICENSE.txt",
+        "sha256": "b07be43ebdc2560f302d0aad0fc6759cdbe3d93650370a83c8832bce1f8510c8"
+      }
+    ],
+    "reservedFontNames": [],
+    "rfn": {
+      "status": "not-applicable",
+      "basis": "The reviewed license text declares no Reserved Font Name."
+    }
+  },
+  "output": {
+    "type": "fixed",
+    "variants": [
+      {
+        "sourceFile": "TT2020StyleD-Regular-subset.woff2",
+        "file": "TT2020StyleD-Regular-subset.woff2",
+        "weight": "400",
+        "style": "normal",
+        "display": "swap"
+      }
+    ]
+  },
+  "cssVariable": "--font-tt2020-styled",
+  "fallbacks": [
+    "Courier New",
+    "Courier"
+  ],
+  "provenance": {
+    "retrievedAt": "2026-10-30",
+    "processing": "Fix the source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Bootstrap source is the current SenrenBanka production WOFF2 snapshot; the published source archive becomes the authoritative rebuild input for this version."
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "id": "format-1452",
+  "familyName": "Format 1452",
+  "sourceFamilyName": "Format_1452",
+  "role": "fixed",
+  "version": "1.0.0",
+  "source": {
+    "project": "Format 1452",
+    "version": "web snapshot 2026-10-30",
+    "url": "https://github.com/velvetyne/Format_1452",
+    "retrievedAt": "2026-10-30",
+    "files": [
+      {
+        "fileName": "Format_1452.woff2",
+        "size": 12912,
+        "sha256": "0063b65577b44f4933b40f19ffafe348a347dbd1d6c415246e70fc76c5a7e5db",
+        "bootstrapKey": "source/fonts/Format_1452.woff2"
+      }
+    ]
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-10-30",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/velvetyne/Format_1452/blob/master/LICENSE.txt",
+    "files": [
+      {
+        "name": "LICENSE.txt",
+        "sha256": "ee63cdef0af5eb1899d67b5662534cfbce5712536e9bddd9ae6b2619da2b332c"
+      }
+    ],
+    "reservedFontNames": [],
+    "rfn": {
+      "status": "not-applicable",
+      "basis": "The reviewed license text declares no Reserved Font Name."
+    }
+  },
+  "output": {
+    "type": "fixed",
+    "variants": [
+      {
+        "sourceFile": "Format_1452.woff2",
+        "file": "Format_1452.woff2",
+        "weight": "500",
+        "style": "normal",
+        "display": "swap"
+      }
+    ]
+  },
+  "cssVariable": "--font-format-1452",
+  "fallbacks": [
+    "Arial Narrow",
+    "Helvetica",
+    "sans-serif"
+  ],
+  "provenance": {
+    "retrievedAt": "2026-10-30",
+    "processing": "Fix the source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Bootstrap source is the current SenrenBanka production WOFF2 snapshot; the published source archive becomes the authoritative rebuild input for this version."
+  }
+}

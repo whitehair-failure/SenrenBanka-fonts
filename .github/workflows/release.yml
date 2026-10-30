@@ -1,0 +1,148 @@
+name: Build and publish font catalog
+
+on:
+  workflow_dispatch:
+    inputs:
+      catalogVersion:
+        description: Catalog semantic version (for example, 1.0.0)
+        required: true
+        type: string
+      bootstrapSourceUrl:
+        description: Optional HTTPS URL for a ZIP containing source/fonts/*
+        required: false
+        type: string
+      bootstrapSourceSha256:
+        description: Required SHA-256 for bootstrapSourceUrl
+        required: false
+        type: string
+      dryRun:
+        description: Verify and print the release plan without publishing
+        required: true
+        default: true
+        type: boolean
+
+concurrency:
+  group: font-catalog-release-${{ inputs.catalogVersion }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.1
+          cache: npm
+
+      - name: Install pinned dependencies
+        run: npm ci
+
+      - name: Run automated tests
+        run: npm test
+
+      - name: Validate descriptors, licenses, schemas, and Git hygiene
+        run: npm run catalog:validate
+
+      - name: Prepare optional controlled bootstrap source
+        env:
+          BOOTSTRAP_URL: ${{ inputs.bootstrapSourceUrl }}
+          BOOTSTRAP_SHA256: ${{ inputs.bootstrapSourceSha256 }}
+        run: |
+          if [[ -n "$BOOTSTRAP_URL" || -n "$BOOTSTRAP_SHA256" ]]; then
+            if [[ -z "$BOOTSTRAP_URL" || -z "$BOOTSTRAP_SHA256" ]]; then
+              echo "bootstrapSourceUrl and bootstrapSourceSha256 must be provided together" >&2
+              exit 1
+            fi
+            node scripts/prepare-bootstrap.mjs \
+              --url "$BOOTSTRAP_URL" \
+              --sha256 "$BOOTSTRAP_SHA256" \
+              --out .cache/bootstrap
+          else
+            echo "No bootstrap bundle supplied; every family must declare HTTPS downloads." >&2
+          fi
+
+      - name: Build catalog (first deterministic run)
+        shell: bash
+        env:
+          CATALOG_VERSION: ${{ inputs.catalogVersion }}
+        run: |
+          args=(--out artifacts --catalog-version "$CATALOG_VERSION")
+          if [[ -d .cache/bootstrap ]]; then args+=(--bootstrap-dir .cache/bootstrap); fi
+          node scripts/build-catalog.mjs "${args[@]}"
+
+      - name: Verify release artifacts
+        run: npm run release:verify -- --dir artifacts --catalog-version "${{ inputs.catalogVersion }}"
+
+      - name: Build catalog (second deterministic run)
+        shell: bash
+        env:
+          CATALOG_VERSION: ${{ inputs.catalogVersion }}
+        run: |
+          args=(--out artifacts-repro --catalog-version "$CATALOG_VERSION")
+          if [[ -d .cache/bootstrap ]]; then args+=(--bootstrap-dir .cache/bootstrap); fi
+          node scripts/build-catalog.mjs "${args[@]}"
+
+      - name: Compare both build outputs byte-for-byte
+        run: npm run release:verify -- --dir artifacts --compare-dir artifacts-repro --catalog-version "${{ inputs.catalogVersion }}"
+
+      - name: Print release plan without creating releases
+        env:
+          CATALOG_VERSION: ${{ inputs.catalogVersion }}
+          TARGET_SHA: ${{ github.sha }}
+          REPOSITORY: ${{ github.repository }}
+        run: node scripts/publish.mjs --dir artifacts --catalog-version "$CATALOG_VERSION" --target-sha "$TARGET_SHA" --repo "$REPOSITORY" --dry-run
+
+      - name: Upload verified release set
+        uses: actions/upload-artifact@v4
+        with:
+          name: font-catalog-v${{ inputs.catalogVersion }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    if: ${{ inputs.dryRun == false }}
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.1
+          cache: npm
+
+      - name: Install pinned dependencies
+        run: npm ci
+
+      - name: Download the already-verified release set
+        uses: actions/download-artifact@v4
+        with:
+          name: font-catalog-v${{ inputs.catalogVersion }}
+          path: artifacts
+
+      - name: Re-verify downloaded artifacts
+        run: npm run release:verify -- --dir artifacts --catalog-version "${{ inputs.catalogVersion }}"
+
+      - name: Publish immutable family and catalog releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CATALOG_VERSION: ${{ inputs.catalogVersion }}
+          TARGET_SHA: ${{ github.sha }}
+          REPOSITORY: ${{ github.repository }}
+        run: node scripts/publish.mjs --dir artifacts --catalog-version "$CATALOG_VERSION" --target-sha "$TARGET_SHA" --repo "$REPOSITORY"

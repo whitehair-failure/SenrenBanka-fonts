@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "id": "tt2020-base",
+  "familyName": "TT2020 Base",
+  "sourceFamilyName": "TT2020Base",
+  "role": "fixed",
+  "version": "1.0.0",
+  "source": {
+    "project": "TT2020",
+    "version": "web snapshot 2026-10-30",
+    "url": "https://github.com/ctrlcctrlv/TT2020",
+    "retrievedAt": "2026-10-30",
+    "files": [
+      {
+        "fileName": "TT2020Base-Regular.woff2",
+        "size": 64668,
+        "sha256": "9c97a370f46677efac62be523aec76f459d5717359d0caceb1e197bcf37f77a1",
+        "bootstrapKey": "source/fonts/TT2020Base-Regular.woff2"
+      },
+      {
+        "fileName": "TT2020Base-Italic.woff2",
+        "size": 30832,
+        "sha256": "120b733366d608c0998fc4f088d0d6b4d1acbff3e38d963dff50f2048bd34595",
+        "bootstrapKey": "source/fonts/TT2020Base-Italic.woff2"
+      }
+    ]
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-10-30",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/ctrlcctrlv/TT2020/blob/master/LICENSE",
+    "files": [
+      {
+        "name": "LICENSE.txt",
+        "sha256": "b07be43ebdc2560f302d0aad0fc6759cdbe3d93650370a83c8832bce1f8510c8"
+      }
+    ],
+    "reservedFontNames": [],
+    "rfn": {
+      "status": "not-applicable",
+      "basis": "The reviewed license text declares no Reserved Font Name."
+    }
+  },
+  "output": {
+    "type": "fixed",
+    "variants": [
+      {
+        "sourceFile": "TT2020Base-Regular.woff2",
+        "file": "TT2020Base-Regular.woff2",
+        "weight": "400",
+        "style": "normal",
+        "display": "swap"
+      },
+      {
+        "sourceFile": "TT2020Base-Italic.woff2",
+        "file": "TT2020Base-Italic.woff2",
+        "weight": "400",
+        "style": "italic",
+        "display": "swap"
+      }
+    ]
+  },
+  "cssVariable": "--font-tt2020",
+  "fallbacks": [
+    "Courier New",
+    "Courier"
+  ],
+  "provenance": {
+    "retrievedAt": "2026-10-30",
+    "processing": "Fix the source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Bootstrap source is the current SenrenBanka production WOFF2 snapshot; the published source archive becomes the authoritative rebuild input for this version."
+  }
+}

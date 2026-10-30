@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "id": "uglytypist",
+  "familyName": "UglyTypist",
+  "sourceFamilyName": "UglyTypist",
+  "role": "fixed",
+  "version": "1.0.0",
+  "source": {
+    "project": "UglyTypist",
+    "version": "web snapshot 2026-10-30",
+    "url": "https://fontlibrary.org/en/font/uglytypist",
+    "retrievedAt": "2026-10-30",
+    "files": [
+      {
+        "fileName": "UglyTypist.woff2",
+        "size": 27304,
+        "sha256": "646e4dc0b49c9a0c3f37eb55e5240e5bae1c10138a8e4a8102fac5c3f599e87a",
+        "bootstrapKey": "source/fonts/UglyTypist.woff2"
+      }
+    ]
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-10-30",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://fontlibrary.org/en/font/uglytypist",
+    "files": [
+      {
+        "name": "LICENSE.txt",
+        "sha256": "9845becd58ab2459af5f2d36cc162794072418690dce5451c41998b197a73fd7"
+      }
+    ],
+    "reservedFontNames": [
+      "UglyTypist"
+    ],
+    "rfn": {
+      "status": "unmodified-distribution",
+      "basis": "The distribution pipeline copies the supplied WOFF2 bytes without modification."
+    }
+  },
+  "output": {
+    "type": "fixed",
+    "variants": [
+      {
+        "sourceFile": "UglyTypist.woff2",
+        "file": "UglyTypist.woff2",
+        "weight": "400",
+        "style": "normal",
+        "display": "swap"
+      }
+    ]
+  },
+  "cssVariable": "--font-uglytypist",
+  "fallbacks": [
+    "Segoe Print",
+    "Comic Sans MS"
+  ],
+  "provenance": {
+    "retrievedAt": "2026-10-30",
+    "processing": "Fix the source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Bootstrap source is the current SenrenBanka production WOFF2 snapshot; the published source archive becomes the authoritative rebuild input for this version."
+  }
+}

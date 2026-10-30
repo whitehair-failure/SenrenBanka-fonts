@@ -1,0 +1,35 @@
+{
+  "name": "@senrenbanka/fonts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Versioned, deterministic font packages for SenrenBanka",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/whitehair-failure/SenrenBanka-fonts.git"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "test": "node --test",
+    "catalog:validate": "node scripts/validate-catalog.mjs",
+    "catalog:build": "node scripts/build-catalog.mjs",
+    "schemas:generate": "node scripts/generate-schemas.mjs",
+    "release:verify": "node scripts/verify-release.mjs",
+    "release:publish": "node scripts/publish.mjs"
+  },
+  "dependencies": {
+    "cn-font-split": "7.4.3",
+    "fontkitten": "1.0.3",
+    "tar": "7.5.22",
+    "yauzl": "3.4.0",
+    "zod": "4.6.7"
+  },
+  "allowScripts": {
+    "cn-font-split@7.4.3": true,
+    "koffi@2.10.0": true,
+    "protobufjs@7.6.6": true
+  }
+}

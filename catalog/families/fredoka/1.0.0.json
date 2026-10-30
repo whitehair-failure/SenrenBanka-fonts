@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "id": "fredoka",
+  "familyName": "Fredoka Variable",
+  "sourceFamilyName": "Fredoka Light",
+  "role": "fixed",
+  "version": "1.0.0",
+  "source": {
+    "project": "Fredoka",
+    "version": "web snapshot 2026-10-30",
+    "url": "https://github.com/google/fonts/tree/main/ofl/fredoka",
+    "retrievedAt": "2026-10-30",
+    "files": [
+      {
+        "fileName": "fredoka-latin-wght-normal.woff2",
+        "size": 29784,
+        "sha256": "a70fad8dc10f23eb6f3842c67d970622627a63b9250235b532f69799f3ea0236",
+        "bootstrapKey": "source/fonts/fredoka-latin-wght-normal.woff2"
+      },
+      {
+        "fileName": "fredoka-latin-ext-wght-normal.woff2",
+        "size": 4576,
+        "sha256": "18a1723c878c0d8acc2e45a108fd62fbb976e408337804afa2908982fac13e2a",
+        "bootstrapKey": "source/fonts/fredoka-latin-ext-wght-normal.woff2"
+      }
+    ]
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-10-30",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/google/fonts/blob/main/ofl/fredoka/OFL.txt",
+    "files": [
+      {
+        "name": "LICENSE.txt",
+        "sha256": "18aabf190848725e2576eefb5c29ba06aac1029d02132252a7f312eac2e50cf3"
+      }
+    ],
+    "reservedFontNames": [],
+    "rfn": {
+      "status": "not-applicable",
+      "basis": "The reviewed license text declares no Reserved Font Name."
+    }
+  },
+  "output": {
+    "type": "fixed",
+    "variants": [
+      {
+        "sourceFile": "fredoka-latin-wght-normal.woff2",
+        "file": "fredoka-latin-wght-normal.woff2",
+        "weight": "300 700",
+        "style": "normal",
+        "display": "swap",
+        "unicodeRange": [
+          "U+0000-00FF",
+          "U+0131",
+          "U+0152-0153",
+          "U+02BB-02BC",
+          "U+02C6",
+          "U+02DA",
+          "U+02DC",
+          "U+0304",
+          "U+0308",
+          "U+0329",
+          "U+2000-206F",
+          "U+20AC",
+          "U+2122",
+          "U+2191",
+          "U+2193",
+          "U+2212",
+          "U+2215",
+          "U+FEFF",
+          "U+FFFD"
+        ]
+      },
+      {
+        "sourceFile": "fredoka-latin-ext-wght-normal.woff2",
+        "file": "fredoka-latin-ext-wght-normal.woff2",
+        "weight": "300 700",
+        "style": "normal",
+        "display": "swap",
+        "unicodeRange": [
+          "U+0100-02BA",
+          "U+02BD-02C5",
+          "U+02C7-02CC",
+          "U+02CE-02D7",
+          "U+02DD-02FF",
+          "U+0304",
+          "U+0308",
+          "U+0329",
+          "U+1D00-1DBF",
+          "U+1E00-1E9F",
+          "U+1EF2-1EFF",
+          "U+2020",
+          "U+20A0-20AB",
+          "U+20AD-20C0",
+          "U+2113",
+          "U+2C60-2C7F",
+          "U+A720-A7FF"
+        ]
+      }
+    ]
+  },
+  "cssVariable": "--font-fredoka",
+  "fallbacks": [
+    "system-ui",
+    "PingFang SC",
+    "Microsoft YaHei",
+    "Hiragino Sans",
+    "Yu Gothic UI",
+    "sans-serif"
+  ],
+  "provenance": {
+    "retrievedAt": "2026-10-30",
+    "processing": "Fix the source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Bootstrap source is the current SenrenBanka production WOFF2 snapshot; the published source archive becomes the authoritative rebuild input for this version."
+  }
+}

@@ -1,0 +1,346 @@
+{
+  "schemaVersion": 1,
+  "id": "courier-prime",
+  "familyName": "Courier Prime",
+  "sourceFamilyName": "Courier Prime",
+  "role": "fixed",
+  "version": "1.0.0",
+  "source": {
+    "project": "Courier Prime",
+    "version": "@fontsource/courier-prime@5.3.0",
+    "url": "https://github.com/quoteunquoteapps/CourierPrime",
+    "retrievedAt": "2026-10-30",
+    "files": [
+      {
+        "fileName": "courier-prime-latin-400-normal.woff2",
+        "size": 18640,
+        "sha256": "f09844e1f4fe9e67df2cc77474519e68756d559b4648278b9dd4f03c8ac9c31f",
+        "bootstrapKey": "source/fonts/courier-prime-latin-400-normal.woff2",
+        "download": {
+          "url": "https://cdn.jsdelivr.net/npm/@fontsource/courier-prime@5.3.0/files/courier-prime-latin-400-normal.woff2",
+          "sha256": "f09844e1f4fe9e67df2cc77474519e68756d559b4648278b9dd4f03c8ac9c31f"
+        }
+      },
+      {
+        "fileName": "courier-prime-latin-400-italic.woff2",
+        "size": 21556,
+        "sha256": "84f91615090e8b84f5adfb7e5826a8ad137c7a13e3687e4bfa85c275149df60f",
+        "bootstrapKey": "source/fonts/courier-prime-latin-400-italic.woff2",
+        "download": {
+          "url": "https://cdn.jsdelivr.net/npm/@fontsource/courier-prime@5.3.0/files/courier-prime-latin-400-italic.woff2",
+          "sha256": "84f91615090e8b84f5adfb7e5826a8ad137c7a13e3687e4bfa85c275149df60f"
+        }
+      },
+      {
+        "fileName": "courier-prime-latin-700-normal.woff2",
+        "size": 19348,
+        "sha256": "5c7ae1cc9aae183453565c836b74a1b988f5f2e52b65098decb909b3930957ec",
+        "bootstrapKey": "source/fonts/courier-prime-latin-700-normal.woff2",
+        "download": {
+          "url": "https://cdn.jsdelivr.net/npm/@fontsource/courier-prime@5.3.0/files/courier-prime-latin-700-normal.woff2",
+          "sha256": "5c7ae1cc9aae183453565c836b74a1b988f5f2e52b65098decb909b3930957ec"
+        }
+      },
+      {
+        "fileName": "courier-prime-latin-700-italic.woff2",
+        "size": 21980,
+        "sha256": "8531294532e78dd2f7f5dd14b594633cafd1e5b2efadb83e024a5d56dd5343d1",
+        "bootstrapKey": "source/fonts/courier-prime-latin-700-italic.woff2",
+        "download": {
+          "url": "https://cdn.jsdelivr.net/npm/@fontsource/courier-prime@5.3.0/files/courier-prime-latin-700-italic.woff2",
+          "sha256": "8531294532e78dd2f7f5dd14b594633cafd1e5b2efadb83e024a5d56dd5343d1"
+        }
+      },
+      {
+        "fileName": "courier-prime-latin-ext-400-normal.woff2",
+        "size": 12736,
+        "sha256": "efbea074e3d87eecd5bcc05fc363853b68e703a45ecb896cd804c80c9918acd0",
+        "bootstrapKey": "source/fonts/courier-prime-latin-ext-400-normal.woff2",
+        "download": {
+          "url": "https://cdn.jsdelivr.net/npm/@fontsource/courier-prime@5.3.0/files/courier-prime-latin-ext-400-normal.woff2",
+          "sha256": "efbea074e3d87eecd5bcc05fc363853b68e703a45ecb896cd804c80c9918acd0"
+        }
+      },
+      {
+        "fileName": "courier-prime-latin-ext-400-italic.woff2",
+        "size": 14000,
+        "sha256": "a47dece624bf5d3567287a52b77ba0ae3d3b1a44dfad77c8b84aff34ffc1d9f1",
+        "bootstrapKey": "source/fonts/courier-prime-latin-ext-400-italic.woff2",
+        "download": {
+          "url": "https://cdn.jsdelivr.net/npm/@fontsource/courier-prime@5.3.0/files/courier-prime-latin-ext-400-italic.woff2",
+          "sha256": "a47dece624bf5d3567287a52b77ba0ae3d3b1a44dfad77c8b84aff34ffc1d9f1"
+        }
+      },
+      {
+        "fileName": "courier-prime-latin-ext-700-normal.woff2",
+        "size": 12928,
+        "sha256": "b7ce6854b9082533919ab47566fc92e9dac95d9a9cc209f5ee1922faa6a19ea9",
+        "bootstrapKey": "source/fonts/courier-prime-latin-ext-700-normal.woff2",
+        "download": {
+          "url": "https://cdn.jsdelivr.net/npm/@fontsource/courier-prime@5.3.0/files/courier-prime-latin-ext-700-normal.woff2",
+          "sha256": "b7ce6854b9082533919ab47566fc92e9dac95d9a9cc209f5ee1922faa6a19ea9"
+        }
+      },
+      {
+        "fileName": "courier-prime-latin-ext-700-italic.woff2",
+        "size": 14036,
+        "sha256": "d232930910d65787171011e9c5c649ea3ff49597f31288e8fa9e7919a9f7e396",
+        "bootstrapKey": "source/fonts/courier-prime-latin-ext-700-italic.woff2",
+        "download": {
+          "url": "https://cdn.jsdelivr.net/npm/@fontsource/courier-prime@5.3.0/files/courier-prime-latin-ext-700-italic.woff2",
+          "sha256": "d232930910d65787171011e9c5c649ea3ff49597f31288e8fa9e7919a9f7e396"
+        }
+      }
+    ],
+    "revision": "@fontsource/courier-prime@5.3.0"
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-10-30",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/quoteunquoteapps/CourierPrime",
+    "files": [
+      {
+        "name": "LICENSE.txt",
+        "sha256": "195bfcfb42f32343efc8475e902c3c4936cda7a9c435c39634e03c1e85fa862b"
+      }
+    ],
+    "reservedFontNames": [],
+    "rfn": {
+      "status": "not-applicable",
+      "basis": "The reviewed license text declares no Reserved Font Name."
+    }
+  },
+  "output": {
+    "type": "fixed",
+    "variants": [
+      {
+        "sourceFile": "courier-prime-latin-400-normal.woff2",
+        "file": "courier-prime-latin-400-normal.woff2",
+        "weight": "400",
+        "style": "normal",
+        "display": "swap",
+        "unicodeRange": [
+          "U+0000-00FF",
+          "U+0131",
+          "U+0152-0153",
+          "U+02BB-02BC",
+          "U+02C6",
+          "U+02DA",
+          "U+02DC",
+          "U+0304",
+          "U+0308",
+          "U+0329",
+          "U+2000-206F",
+          "U+20AC",
+          "U+2122",
+          "U+2191",
+          "U+2193",
+          "U+2212",
+          "U+2215",
+          "U+FEFF",
+          "U+FFFD"
+        ]
+      },
+      {
+        "sourceFile": "courier-prime-latin-400-italic.woff2",
+        "file": "courier-prime-latin-400-italic.woff2",
+        "weight": "400",
+        "style": "italic",
+        "display": "swap",
+        "unicodeRange": [
+          "U+0000-00FF",
+          "U+0131",
+          "U+0152-0153",
+          "U+02BB-02BC",
+          "U+02C6",
+          "U+02DA",
+          "U+02DC",
+          "U+0304",
+          "U+0308",
+          "U+0329",
+          "U+2000-206F",
+          "U+20AC",
+          "U+2122",
+          "U+2191",
+          "U+2193",
+          "U+2212",
+          "U+2215",
+          "U+FEFF",
+          "U+FFFD"
+        ]
+      },
+      {
+        "sourceFile": "courier-prime-latin-700-normal.woff2",
+        "file": "courier-prime-latin-700-normal.woff2",
+        "weight": "700",
+        "style": "normal",
+        "display": "swap",
+        "unicodeRange": [
+          "U+0000-00FF",
+          "U+0131",
+          "U+0152-0153",
+          "U+02BB-02BC",
+          "U+02C6",
+          "U+02DA",
+          "U+02DC",
+          "U+0304",
+          "U+0308",
+          "U+0329",
+          "U+2000-206F",
+          "U+20AC",
+          "U+2122",
+          "U+2191",
+          "U+2193",
+          "U+2212",
+          "U+2215",
+          "U+FEFF",
+          "U+FFFD"
+        ]
+      },
+      {
+        "sourceFile": "courier-prime-latin-700-italic.woff2",
+        "file": "courier-prime-latin-700-italic.woff2",
+        "weight": "700",
+        "style": "italic",
+        "display": "swap",
+        "unicodeRange": [
+          "U+0000-00FF",
+          "U+0131",
+          "U+0152-0153",
+          "U+02BB-02BC",
+          "U+02C6",
+          "U+02DA",
+          "U+02DC",
+          "U+0304",
+          "U+0308",
+          "U+0329",
+          "U+2000-206F",
+          "U+20AC",
+          "U+2122",
+          "U+2191",
+          "U+2193",
+          "U+2212",
+          "U+2215",
+          "U+FEFF",
+          "U+FFFD"
+        ]
+      },
+      {
+        "sourceFile": "courier-prime-latin-ext-400-normal.woff2",
+        "file": "courier-prime-latin-ext-400-normal.woff2",
+        "weight": "400",
+        "style": "normal",
+        "display": "swap",
+        "unicodeRange": [
+          "U+0100-02BA",
+          "U+02BD-02C5",
+          "U+02C7-02CC",
+          "U+02CE-02D7",
+          "U+02DD-02FF",
+          "U+0304",
+          "U+0308",
+          "U+0329",
+          "U+1D00-1DBF",
+          "U+1E00-1E9F",
+          "U+1EF2-1EFF",
+          "U+2020",
+          "U+20A0-20AB",
+          "U+20AD-20C0",
+          "U+2113",
+          "U+2C60-2C7F",
+          "U+A720-A7FF"
+        ]
+      },
+      {
+        "sourceFile": "courier-prime-latin-ext-400-italic.woff2",
+        "file": "courier-prime-latin-ext-400-italic.woff2",
+        "weight": "400",
+        "style": "italic",
+        "display": "swap",
+        "unicodeRange": [
+          "U+0100-02BA",
+          "U+02BD-02C5",
+          "U+02C7-02CC",
+          "U+02CE-02D7",
+          "U+02DD-02FF",
+          "U+0304",
+          "U+0308",
+          "U+0329",
+          "U+1D00-1DBF",
+          "U+1E00-1E9F",
+          "U+1EF2-1EFF",
+          "U+2020",
+          "U+20A0-20AB",
+          "U+20AD-20C0",
+          "U+2113",
+          "U+2C60-2C7F",
+          "U+A720-A7FF"
+        ]
+      },
+      {
+        "sourceFile": "courier-prime-latin-ext-700-normal.woff2",
+        "file": "courier-prime-latin-ext-700-normal.woff2",
+        "weight": "700",
+        "style": "normal",
+        "display": "swap",
+        "unicodeRange": [
+          "U+0100-02BA",
+          "U+02BD-02C5",
+          "U+02C7-02CC",
+          "U+02CE-02D7",
+          "U+02DD-02FF",
+          "U+0304",
+          "U+0308",
+          "U+0329",
+          "U+1D00-1DBF",
+          "U+1E00-1E9F",
+          "U+1EF2-1EFF",
+          "U+2020",
+          "U+20A0-20AB",
+          "U+20AD-20C0",
+          "U+2113",
+          "U+2C60-2C7F",
+          "U+A720-A7FF"
+        ]
+      },
+      {
+        "sourceFile": "courier-prime-latin-ext-700-italic.woff2",
+        "file": "courier-prime-latin-ext-700-italic.woff2",
+        "weight": "700",
+        "style": "italic",
+        "display": "swap",
+        "unicodeRange": [
+          "U+0100-02BA",
+          "U+02BD-02C5",
+          "U+02C7-02CC",
+          "U+02CE-02D7",
+          "U+02DD-02FF",
+          "U+0304",
+          "U+0308",
+          "U+0329",
+          "U+1D00-1DBF",
+          "U+1E00-1E9F",
+          "U+1EF2-1EFF",
+          "U+2020",
+          "U+20A0-20AB",
+          "U+20AD-20C0",
+          "U+2113",
+          "U+2C60-2C7F",
+          "U+A720-A7FF"
+        ]
+      }
+    ]
+  },
+  "cssVariable": "--font-courier-prime",
+  "fallbacks": [
+    "Courier New",
+    "Courier"
+  ],
+  "provenance": {
+    "retrievedAt": "2026-10-30",
+    "processing": "Fix the source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Bootstrap source is the current SenrenBanka production WOFF2 snapshot; the published source archive becomes the authoritative rebuild input for this version."
+  }
+}

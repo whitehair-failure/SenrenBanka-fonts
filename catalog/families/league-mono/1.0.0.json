@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "id": "league-mono",
+  "familyName": "League Mono",
+  "sourceFamilyName": "League Mono",
+  "role": "fixed",
+  "version": "1.0.0",
+  "source": {
+    "project": "League Mono",
+    "version": "@fontsource/league-mono@5.3.0",
+    "url": "https://github.com/theleagueof/league-mono",
+    "retrievedAt": "2026-10-30",
+    "files": [
+      {
+        "fileName": "league-mono-latin-400-normal.woff2",
+        "size": 26208,
+        "sha256": "b2bcfff669207547fd73c71fe7842312fe615155d3da567efa689df029f92a6a",
+        "bootstrapKey": "source/fonts/league-mono-latin-400-normal.woff2",
+        "download": {
+          "url": "https://cdn.jsdelivr.net/npm/@fontsource/league-mono@5.3.0/files/league-mono-latin-400-normal.woff2",
+          "sha256": "b2bcfff669207547fd73c71fe7842312fe615155d3da567efa689df029f92a6a"
+        }
+      },
+      {
+        "fileName": "league-mono-latin-700-normal.woff2",
+        "size": 26172,
+        "sha256": "5838c36fe3804dcea33e4d3e1e0b2a2e393bca05c8abd1c544dbbdd7ed8ca7fa",
+        "bootstrapKey": "source/fonts/league-mono-latin-700-normal.woff2",
+        "download": {
+          "url": "https://cdn.jsdelivr.net/npm/@fontsource/league-mono@5.3.0/files/league-mono-latin-700-normal.woff2",
+          "sha256": "5838c36fe3804dcea33e4d3e1e0b2a2e393bca05c8abd1c544dbbdd7ed8ca7fa"
+        }
+      }
+    ],
+    "revision": "@fontsource/league-mono@5.3.0"
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-10-30",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/theleagueof/league-mono",
+    "files": [
+      {
+        "name": "LICENSE.txt",
+        "sha256": "7f75a346499213574fe7dcbe69dab60278c23016255967317b385846b4adf6d6"
+      }
+    ],
+    "reservedFontNames": [],
+    "rfn": {
+      "status": "not-applicable",
+      "basis": "The reviewed license text declares no Reserved Font Name."
+    }
+  },
+  "output": {
+    "type": "fixed",
+    "variants": [
+      {
+        "sourceFile": "league-mono-latin-400-normal.woff2",
+        "file": "league-mono-latin-400-normal.woff2",
+        "weight": "400",
+        "style": "normal",
+        "display": "swap"
+      },
+      {
+        "sourceFile": "league-mono-latin-700-normal.woff2",
+        "file": "league-mono-latin-700-normal.woff2",
+        "weight": "700",
+        "style": "normal",
+        "display": "swap"
+      }
+    ]
+  },
+  "cssVariable": "--font-league-mono",
+  "fallbacks": [
+    "Consolas",
+    "Courier New"
+  ],
+  "provenance": {
+    "retrievedAt": "2026-10-30",
+    "processing": "Fix the source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Bootstrap source is the current SenrenBanka production WOFF2 snapshot; the published source archive becomes the authoritative rebuild input for this version."
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "id": "lxgw-wenkai",
+  "familyName": "LXGW WenKai GB",
+  "sourceFamilyName": "LXGW WenKai GB Medium",
+  "role": "core-cjk",
+  "version": "1.0.0",
+  "source": {
+    "project": "LXGW WenKai GB",
+    "version": "1.521",
+    "url": "https://github.com/lxgw/LxgwWenkaiGB",
+    "revision": "v1.521",
+    "retrievedAt": "2026-10-30",
+    "files": [
+      {
+        "fileName": "LXGWWenKaiGB-Medium.ttf",
+        "size": 25596480,
+        "sha256": "c23176a461f65d71a72aed32ed8ca32f29ebb7f8ae43c0ca3c3f08830de6180b",
+        "bootstrapKey": "source/fonts/LXGWWenKaiGB-Medium.ttf",
+        "download": {
+          "url": "https://github.com/lxgw/LxgwWenkaiGB/releases/download/v1.521/LXGWWenKaiGB-Medium.ttf",
+          "sha256": "c23176a461f65d71a72aed32ed8ca32f29ebb7f8ae43c0ca3c3f08830de6180b"
+        }
+      }
+    ]
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-10-30",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/lxgw/LxgwWenkaiGB",
+    "files": [
+      {
+        "name": "LICENSE.txt",
+        "sha256": "a8aa32c38a3402ba4e40fb6d39c913300dd4a0336290dce5c14e3a2f9308d092"
+      }
+    ],
+    "reservedFontNames": [
+      "霞鹜",
+      "霞鶩",
+      "落霞孤鹜",
+      "落霞孤鶩",
+      "LXGW"
+    ],
+    "rfn": {
+      "status": "permission-granted",
+      "basis": "The upstream OFL grants additional permission for web-only subsetting and WOFF2 conversion.",
+      "permissionText": "[ADDITIONAL PERMISSION] The Reserved Font Names '霞鹜', '霞鶩', '落霞孤鹜', '落霞孤鶩' and 'LXGW' may continue to be used in Modified Versions subsetted or converted to other formats (e.g. WOFF/WOFF2) solely for web font delivery.",
+      "permissionEvidenceUrl": "https://github.com/lxgw/LxgwWenkaiGB"
+    }
+  },
+  "output": {
+    "type": "core-cjk",
+    "sourceFile": "LXGWWenKaiGB-Medium.ttf",
+    "weight": "500",
+    "style": "normal",
+    "display": "swap",
+    "chunkSize": 71680,
+    "languageAreas": true,
+    "fontFeature": true
+  },
+  "cssVariable": "--font-lxgw",
+  "fallbacks": [
+    "PingFang SC",
+    "Microsoft YaHei",
+    "Hiragino Sans",
+    "Yu Gothic UI",
+    "serif"
+  ],
+  "provenance": {
+    "retrievedAt": "2026-10-30",
+    "processing": "Fix the source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Bootstrap source is the pinned upstream release asset."
+  }
+}

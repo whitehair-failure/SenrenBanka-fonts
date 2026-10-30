@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "id": "handjet",
+  "familyName": "Handjet Variable",
+  "sourceFamilyName": "Handjet",
+  "role": "fixed",
+  "version": "1.0.0",
+  "source": {
+    "project": "Handjet",
+    "version": "@fontsource-variable/handjet@5.3.1",
+    "url": "https://github.com/rosettatype/Handjet",
+    "retrievedAt": "2026-10-30",
+    "files": [
+      {
+        "fileName": "handjet-latin-full-normal.woff2",
+        "size": 18552,
+        "sha256": "6cbfc356f203f313f03b7f24f763e093c06ef38a770cfba69a4e5ca9a190103d",
+        "bootstrapKey": "source/fonts/handjet-latin-full-normal.woff2",
+        "download": {
+          "url": "https://cdn.jsdelivr.net/npm/@fontsource-variable/handjet@5.3.1/files/handjet-latin-full-normal.woff2",
+          "sha256": "6cbfc356f203f313f03b7f24f763e093c06ef38a770cfba69a4e5ca9a190103d"
+        }
+      }
+    ],
+    "revision": "@fontsource-variable/handjet@5.3.1"
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-10-30",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/rosettatype/Handjet",
+    "files": [
+      {
+        "name": "LICENSE.txt",
+        "sha256": "33da8fa576faeeb46d111ad12328e30b07ab059b13d6a0f77c562b5e6ce8e3ee"
+      }
+    ],
+    "reservedFontNames": [],
+    "rfn": {
+      "status": "not-applicable",
+      "basis": "The reviewed license text declares no Reserved Font Name."
+    }
+  },
+  "output": {
+    "type": "fixed",
+    "variants": [
+      {
+        "sourceFile": "handjet-latin-full-normal.woff2",
+        "file": "handjet-latin-full-normal.woff2",
+        "weight": "100 900",
+        "style": "normal",
+        "display": "swap"
+      }
+    ]
+  },
+  "cssVariable": "--font-handjet",
+  "fallbacks": [
+    "Courier New",
+    "Courier"
+  ],
+  "provenance": {
+    "retrievedAt": "2026-10-30",
+    "processing": "Fix the source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Bootstrap source is the current SenrenBanka production WOFF2 snapshot; the published source archive becomes the authoritative rebuild input for this version."
+  }
+}

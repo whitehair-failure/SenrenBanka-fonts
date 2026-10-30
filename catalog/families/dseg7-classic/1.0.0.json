@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "id": "dseg7-classic",
+  "familyName": "DSEG7 Classic",
+  "sourceFamilyName": "DSEG7 Classic",
+  "role": "fixed",
+  "version": "1.0.0",
+  "source": {
+    "project": "DSEG",
+    "version": "web snapshot 2026-10-30",
+    "url": "https://github.com/keshikan/DSEG",
+    "retrievedAt": "2026-10-30",
+    "files": [
+      {
+        "fileName": "DSEG7Classic-Regular.woff2",
+        "size": 5180,
+        "sha256": "2baf0d39ad9975ad4b34865048624e020af41081af087fb887aa81178dba966e",
+        "bootstrapKey": "source/fonts/DSEG7Classic-Regular.woff2"
+      },
+      {
+        "fileName": "DSEG7Classic-Bold.woff2",
+        "size": 5132,
+        "sha256": "ec2e7499bc8ac8f8225e1fb6a5d45ff6083c6e2b0efbaf99d37fa7b42a5767ff",
+        "bootstrapKey": "source/fonts/DSEG7Classic-Bold.woff2"
+      }
+    ]
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-10-30",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/keshikan/DSEG",
+    "files": [
+      {
+        "name": "LICENSE.txt",
+        "sha256": "1d661fc5a6babab3883f297a4706cbaa4ea645530ac151c80234a56d4e3fb0ee"
+      }
+    ],
+    "reservedFontNames": [
+      "DSEG"
+    ],
+    "rfn": {
+      "status": "unmodified-distribution",
+      "basis": "The distribution pipeline copies the supplied WOFF2 bytes without modification."
+    }
+  },
+  "output": {
+    "type": "fixed",
+    "variants": [
+      {
+        "sourceFile": "DSEG7Classic-Regular.woff2",
+        "file": "DSEG7Classic-Regular.woff2",
+        "weight": "400",
+        "style": "normal",
+        "display": "swap"
+      },
+      {
+        "sourceFile": "DSEG7Classic-Bold.woff2",
+        "file": "DSEG7Classic-Bold.woff2",
+        "weight": "700",
+        "style": "normal",
+        "display": "swap"
+      }
+    ]
+  },
+  "cssVariable": "--font-dseg7",
+  "fallbacks": [
+    "Consolas",
+    "monospace"
+  ],
+  "provenance": {
+    "retrievedAt": "2026-10-30",
+    "processing": "Fix the source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Bootstrap source is the current SenrenBanka production WOFF2 snapshot; the published source archive becomes the authoritative rebuild input for this version."
+  }
+}

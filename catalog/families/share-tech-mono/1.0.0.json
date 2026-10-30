@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "share-tech-mono",
+  "familyName": "Share Tech Mono",
+  "sourceFamilyName": "Share Tech Mono",
+  "role": "fixed",
+  "version": "1.0.0",
+  "source": {
+    "project": "Share Tech Mono",
+    "version": "@fontsource/share-tech-mono@5.3.0",
+    "url": "https://github.com/google/fonts/tree/main/ofl/sharetechmono",
+    "retrievedAt": "2026-10-30",
+    "files": [
+      {
+        "fileName": "share-tech-mono-latin-400-normal.woff2",
+        "size": 13500,
+        "sha256": "41e6b9f297f7d9a2df2aaa274092f76d2f72711a15ca455f7f4f4f92caf16b72",
+        "bootstrapKey": "source/fonts/share-tech-mono-latin-400-normal.woff2",
+        "download": {
+          "url": "https://cdn.jsdelivr.net/npm/@fontsource/share-tech-mono@5.3.0/files/share-tech-mono-latin-400-normal.woff2",
+          "sha256": "41e6b9f297f7d9a2df2aaa274092f76d2f72711a15ca455f7f4f4f92caf16b72"
+        }
+      }
+    ],
+    "revision": "@fontsource/share-tech-mono@5.3.0"
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-10-30",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/google/fonts/blob/main/ofl/sharetechmono/OFL.txt",
+    "files": [
+      {
+        "name": "LICENSE.txt",
+        "sha256": "9909bc951ab73dcf212a1675aab327ffafa853c2b8e8d11a066b1bcc57afeefb"
+      }
+    ],
+    "reservedFontNames": [
+      "Share"
+    ],
+    "rfn": {
+      "status": "unmodified-distribution",
+      "basis": "The distribution pipeline copies the supplied WOFF2 bytes without modification."
+    }
+  },
+  "output": {
+    "type": "fixed",
+    "variants": [
+      {
+        "sourceFile": "share-tech-mono-latin-400-normal.woff2",
+        "file": "share-tech-mono-latin-400-normal.woff2",
+        "weight": "400",
+        "style": "normal",
+        "display": "swap"
+      }
+    ]
+  },
+  "cssVariable": "--font-share-tech-mono",
+  "fallbacks": [
+    "Consolas",
+    "Courier New",
+    "monospace"
+  ],
+  "provenance": {
+    "retrievedAt": "2026-10-30",
+    "processing": "Fix the source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Bootstrap source is the current SenrenBanka production WOFF2 snapshot; the published source archive becomes the authoritative rebuild input for this version."
+  }
+}
