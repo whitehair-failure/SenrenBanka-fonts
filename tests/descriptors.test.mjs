@@ -18,15 +18,42 @@ import {
   repoRoot,
 } from './helpers/fixtures.mjs';
 
-test('initial catalog describes exactly the 20 local-provider families', async () => {
+test('current catalog describes exactly the 26 local-provider families', async () => {
   const descriptors = await loadCurrentDescriptors(repoRoot);
-  assert.equal(descriptors.length, 20);
+  assert.equal(descriptors.length, 26);
   const core = descriptors
     .filter((item) => item.descriptor.role === 'core-cjk')
     .map((item) => item.descriptor.id)
     .sort();
-  assert.deepEqual(core, ['ark-pixel-12px', 'lxgw-wenkai', 'zhuque-fangsong']);
+  assert.deepEqual(core, [
+    'ark-pixel-12px',
+    'dongle',
+    'galmuri11',
+    'gothic-a1',
+    'gowun-batang',
+    'lxgw-wenkai',
+    'noto-sans-mono-cjk-kr',
+    'poor-story',
+    'zhuque-fangsong',
+  ]);
   assert.equal(descriptors.filter((item) => item.descriptor.role === 'fixed').length, 17);
+  const korean = descriptors
+    .filter((item) => item.descriptor.scripts?.includes('hangul'))
+    .map((item) => item.descriptor.id)
+    .sort();
+  assert.deepEqual(korean, [
+    'dongle',
+    'galmuri11',
+    'gothic-a1',
+    'gowun-batang',
+    'noto-sans-mono-cjk-kr',
+    'poor-story',
+  ]);
+  assert.ok(
+    korean.every(
+      (id) => descriptors.find((item) => item.descriptor.id === id).descriptor.role === 'core-cjk',
+    ),
+  );
   const bootstrapPlan = bootstrapSourcePlan(descriptors);
   assert.equal(bootstrapPlan.selected.length, 12);
   assert.ok(bootstrapPlan.selected.every((source) => !source.hasDownload));

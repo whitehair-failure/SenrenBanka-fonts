@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "id": "galmuri11",
+  "familyName": "Galmuri11",
+  "sourceFamilyName": "Galmuri11 Regular",
+  "role": "core-cjk",
+  "scripts": ["hangul"],
+  "version": "1.0.0",
+  "source": {
+    "project": "Galmuri",
+    "version": "2.40.4",
+    "url": "https://github.com/quiple/galmuri",
+    "revision": "v2.40.4",
+    "retrievedAt": "2026-11-01",
+    "files": [
+      {
+        "fileName": "Galmuri11.ttf",
+        "size": 5376428,
+        "sha256": "e24256f42e43713d2ea086a1e1669d78b968f5b3cc547e5c157f0606ffa5def1",
+        "bootstrapKey": "source/fonts/Galmuri11.ttf",
+        "download": {
+          "url": "https://github.com/quiple/galmuri/releases/download/v2.40.4/Galmuri-v2.40.4.zip",
+          "sha256": "c8b3d9861a62ae73c8b1178091401cd79994812437ef386413f6dd54856e60e7",
+          "archiveMember": "Galmuri11.ttf"
+        }
+      }
+    ]
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-11-01",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/quiple/galmuri",
+    "files": [
+      {
+        "name": "LICENSE.txt",
+        "sha256": "86a3ee9495f942f0243f18c103da9faca27adb88142613edb8bb852e56c892c1"
+      }
+    ],
+    "reservedFontNames": [],
+    "rfn": {
+      "status": "not-applicable",
+      "basis": "The upstream OFL does not declare a Reserved Font Name."
+    }
+  },
+  "output": {
+    "type": "core-cjk",
+    "sourceFile": "Galmuri11.ttf",
+    "weight": "400",
+    "style": "normal",
+    "display": "swap",
+    "chunkSize": 71680,
+    "languageAreas": true,
+    "fontFeature": true
+  },
+  "cssVariable": "--font-galmuri11",
+  "fallbacks": ["Apple SD Gothic Neo", "Malgun Gothic", "monospace"],
+  "provenance": {
+    "retrievedAt": "2026-11-01",
+    "processing": "Fix source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Pinned Galmuri release asset; no Reserved Font Name."
+  }
+}

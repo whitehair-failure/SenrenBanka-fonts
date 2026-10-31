@@ -92,6 +92,12 @@ function assertDescriptorManifestCompatibility(manifest, descriptor) {
   if (JSON.stringify(manifest.fallbacks) !== JSON.stringify(descriptor.fallbacks)) {
     throw new Error('family manifest fallbacks do not match descriptor');
   }
+  if (
+    JSON.stringify(manifest.scripts ?? ['cjk']) !==
+    JSON.stringify(descriptor.scripts ?? ['cjk'])
+  ) {
+    throw new Error('family manifest scripts do not match descriptor');
+  }
   if (JSON.stringify(manifest.buildTools) !== JSON.stringify(TOOL_VERSIONS)) {
     throw new Error('family manifest build tool versions are not pinned correctly');
   }
@@ -456,7 +462,12 @@ export async function verifyCatalogDirectory({ dir, descriptors }) {
     const { descriptor } = item;
     const family = catalog.families[descriptor.id];
     if (!family) throw new Error(`catalog is missing ${descriptor.id}`);
-    if (family.version !== descriptor.version || family.role !== descriptor.role) {
+    if (
+      family.version !== descriptor.version ||
+      family.role !== descriptor.role ||
+      JSON.stringify(family.scripts ?? ['cjk']) !==
+        JSON.stringify(descriptor.scripts ?? ['cjk'])
+    ) {
       throw new Error(`catalog pointer drift for ${descriptor.id}`);
     }
     if (family.package.releaseTag !== familyReleaseTag(descriptor.id, descriptor.version)) {

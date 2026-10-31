@@ -265,6 +265,10 @@
               ],
               "type": "string"
             },
+            "subsetStrategy": {
+              "const": "subset-font",
+              "type": "string"
+            },
             "type": {
               "const": "core-cjk",
               "type": "string"
@@ -321,6 +325,17 @@
     "schemaVersion": {
       "const": 1,
       "type": "number"
+    },
+    "scripts": {
+      "items": {
+        "enum": [
+          "cjk",
+          "hangul"
+        ],
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array"
     },
     "source": {
       "additionalProperties": false,

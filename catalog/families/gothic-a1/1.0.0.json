@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "id": "gothic-a1",
+  "familyName": "Gothic A1",
+  "sourceFamilyName": "Gothic A1",
+  "role": "core-cjk",
+  "scripts": ["hangul"],
+  "version": "1.0.0",
+  "source": {
+    "project": "Gothic A1",
+    "version": "6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec",
+    "url": "https://github.com/google/fonts/tree/6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec/ofl/gothica1",
+    "revision": "6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec",
+    "retrievedAt": "2026-11-01",
+    "files": [
+      {
+        "fileName": "GothicA1-Regular.ttf",
+        "size": 2295400,
+        "sha256": "211151bea98098c579610ab1114bb1bfe909057207db561f357b896d076c21ac",
+        "bootstrapKey": "source/fonts/GothicA1-Regular.ttf",
+        "download": {
+          "url": "https://raw.githubusercontent.com/google/fonts/6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec/ofl/gothica1/GothicA1-Regular.ttf",
+          "sha256": "211151bea98098c579610ab1114bb1bfe909057207db561f357b896d076c21ac"
+        }
+      }
+    ]
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-11-01",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/google/fonts/tree/6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec/ofl/gothica1",
+    "files": [
+      {
+        "name": "LICENSE.txt",
+        "sha256": "ed95c33f80ccca002e3a360b683c43368f9c5eb024e5b992abb51af3c10b59bc"
+      }
+    ],
+    "reservedFontNames": [],
+    "rfn": {
+      "status": "not-applicable",
+      "basis": "The upstream OFL does not declare a Reserved Font Name."
+    }
+  },
+  "output": {
+    "type": "core-cjk",
+    "sourceFile": "GothicA1-Regular.ttf",
+    "weight": "400",
+    "style": "normal",
+    "display": "swap",
+    "chunkSize": 71680,
+    "languageAreas": true,
+    "fontFeature": true
+  },
+  "cssVariable": "--font-gothic-a1",
+  "fallbacks": ["Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", "sans-serif"],
+  "provenance": {
+    "retrievedAt": "2026-11-01",
+    "processing": "Fix source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Pinned Google Fonts commit; no Reserved Font Name."
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "id": "dongle",
+  "familyName": "Dongle",
+  "sourceFamilyName": "Dongle",
+  "role": "core-cjk",
+  "scripts": ["hangul"],
+  "version": "1.0.0",
+  "source": {
+    "project": "Dongle",
+    "version": "6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec",
+    "url": "https://github.com/google/fonts/tree/6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec/ofl/dongle",
+    "revision": "6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec",
+    "retrievedAt": "2026-11-01",
+    "files": [
+      {
+        "fileName": "Dongle-Regular.ttf",
+        "size": 4458600,
+        "sha256": "2966e7a9d312a868e2b5477bf9a3e59b8ce16beb76e7e52305ab5897d1ce9741",
+        "bootstrapKey": "source/fonts/Dongle-Regular.ttf",
+        "download": {
+          "url": "https://raw.githubusercontent.com/google/fonts/6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec/ofl/dongle/Dongle-Regular.ttf",
+          "sha256": "2966e7a9d312a868e2b5477bf9a3e59b8ce16beb76e7e52305ab5897d1ce9741"
+        }
+      }
+    ]
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-11-01",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/google/fonts/tree/6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec/ofl/dongle",
+    "files": [
+      {
+        "name": "LICENSE.txt",
+        "sha256": "f9e59049e824264bffd626d0901cfcaac9d5ba756988b904d3e3e0e233493607"
+      }
+    ],
+    "reservedFontNames": [],
+    "rfn": {
+      "status": "not-applicable",
+      "basis": "The upstream OFL does not declare a Reserved Font Name."
+    }
+  },
+  "output": {
+    "type": "core-cjk",
+    "sourceFile": "Dongle-Regular.ttf",
+    "weight": "400",
+    "style": "normal",
+    "display": "swap",
+    "chunkSize": 71680,
+    "languageAreas": true,
+    "fontFeature": true
+  },
+  "cssVariable": "--font-dongle",
+  "fallbacks": ["Apple SD Gothic Neo", "Malgun Gothic", "sans-serif"],
+  "provenance": {
+    "retrievedAt": "2026-11-01",
+    "processing": "Fix source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Pinned Google Fonts commit; no Reserved Font Name."
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "id": "gowun-batang",
+  "familyName": "Gowun Batang",
+  "sourceFamilyName": "Gowun Batang",
+  "role": "core-cjk",
+  "scripts": ["hangul"],
+  "version": "1.0.0",
+  "source": {
+    "project": "Gowun Batang",
+    "version": "6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec",
+    "url": "https://github.com/google/fonts/tree/6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec/ofl/gowunbatang",
+    "revision": "6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec",
+    "retrievedAt": "2026-11-01",
+    "files": [
+      {
+        "fileName": "GowunBatang-Regular.ttf",
+        "size": 8433296,
+        "sha256": "466c593e7147412e748af4856d5ad14709b5a860bdf62b9c2546f2c5874e9849",
+        "bootstrapKey": "source/fonts/GowunBatang-Regular.ttf",
+        "download": {
+          "url": "https://raw.githubusercontent.com/google/fonts/6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec/ofl/gowunbatang/GowunBatang-Regular.ttf",
+          "sha256": "466c593e7147412e748af4856d5ad14709b5a860bdf62b9c2546f2c5874e9849"
+        }
+      }
+    ]
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-11-01",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/google/fonts/tree/6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec/ofl/gowunbatang",
+    "files": [
+      {
+        "name": "LICENSE.txt",
+        "sha256": "49a57cc769fa9affd6eefb9070a61e3d3f6b757c97cafb15848bc6d1c81acc78"
+      }
+    ],
+    "reservedFontNames": [],
+    "rfn": {
+      "status": "not-applicable",
+      "basis": "The upstream OFL does not declare a Reserved Font Name."
+    }
+  },
+  "output": {
+    "type": "core-cjk",
+    "sourceFile": "GowunBatang-Regular.ttf",
+    "weight": "400",
+    "style": "normal",
+    "display": "swap",
+    "chunkSize": 71680,
+    "languageAreas": true,
+    "fontFeature": true
+  },
+  "cssVariable": "--font-gowun-batang",
+  "fallbacks": ["Apple SD Gothic Neo", "Malgun Gothic", "Noto Serif KR", "serif"],
+  "provenance": {
+    "retrievedAt": "2026-11-01",
+    "processing": "Fix source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Pinned Google Fonts commit; no Reserved Font Name."
+  }
+}

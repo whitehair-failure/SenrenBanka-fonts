@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "id": "noto-sans-mono-cjk-kr",
+  "familyName": "Noto Sans Mono CJK KR",
+  "sourceFamilyName": "Noto Sans Mono CJK KR",
+  "role": "core-cjk",
+  "scripts": [
+    "hangul"
+  ],
+  "version": "1.0.0",
+  "source": {
+    "project": "Noto Sans Mono CJK KR",
+    "version": "Sans2.004",
+    "url": "https://github.com/notofonts/noto-cjk",
+    "revision": "Sans2.004",
+    "retrievedAt": "2026-11-01",
+    "files": [
+      {
+        "fileName": "NotoSansMonoCJKkr-Regular.otf",
+        "size": 16389532,
+        "sha256": "d5afed9988a28ae96afb0f4791754d3c9f4f08d08477eb1a7d6e2d905679a472",
+        "bootstrapKey": "source/fonts/NotoSansMonoCJKkr-Regular.otf",
+        "download": {
+          "url": "https://github.com/notofonts/noto-cjk/releases/download/Sans2.004/12_NotoSansMonoCJKkr.zip",
+          "sha256": "8c1368d3faac3c43991a91392fb73d985409ffe078cb731c7e303e226e4fd619",
+          "archiveMember": "NotoSansMonoCJKkr-Regular.otf"
+        }
+      }
+    ]
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-11-01",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/notofonts/noto-cjk",
+    "files": [
+      {
+        "name": "LICENSE.txt",
+        "sha256": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2"
+      }
+    ],
+    "reservedFontNames": [],
+    "rfn": {
+      "status": "not-applicable",
+      "basis": "The upstream noto-cjk OFL does not declare a Reserved Font Name."
+    }
+  },
+  "output": {
+    "type": "core-cjk",
+    "sourceFile": "NotoSansMonoCJKkr-Regular.otf",
+    "weight": "400",
+    "style": "normal",
+    "display": "swap",
+    "chunkSize": 71680,
+    "languageAreas": true,
+    "fontFeature": true,
+    "subsetStrategy": "subset-font"
+  },
+  "cssVariable": "--font-noto-sans-mono-cjk-kr",
+  "fallbacks": [
+    "Apple SD Gothic Neo",
+    "Malgun Gothic",
+    "monospace"
+  ],
+  "provenance": {
+    "retrievedAt": "2026-11-01",
+    "processing": "Fix source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Pinned noto-cjk release asset; no Reserved Font Name. Do not use the Google Fonts variable font, which declares RFN 'Source' and defaults to Thin."
+  }
+}

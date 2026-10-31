@@ -54,6 +54,7 @@ export function buildFamilyManifest({
     familyName: descriptor.familyName,
     sourceFamilyName: descriptor.sourceFamilyName,
     role: descriptor.role,
+    ...(descriptor.scripts ? { scripts: descriptor.scripts } : {}),
     version: descriptor.version,
     cssVariable: descriptor.cssVariable,
     fallbacks: descriptor.fallbacks,

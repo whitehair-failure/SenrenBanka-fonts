@@ -118,3 +118,22 @@ Unicode noncharacters used internally by the splitter as CMap sentinels are not
 published. Some upstream paired punctuation glyphs may remain as inert cmap
 aliases in adjacent shards; browser selection remains disjoint through
 `unicode-range`. This behavior is covered by the fixture regression tests.
+
+## Script Routing
+
+Core families may declare `scripts`:
+
+- `["cjk"]` (default when omitted) for Han/Kana core families.
+- `["hangul"]` for Korean core families.
+
+The site uses this field to generate Hangul-only content subsets and
+`unicode-range` rules. It is a routing declaration, not a full coverage claim;
+actual coverage is verified from the source cmap.
+
+## Deterministic Subset Fallback
+
+`output.subsetStrategy: "subset-font"` makes the builder skip the
+`cn-font-split` final shard pass and build deterministic shards directly from
+sorted source code points with `subset-font@2.9.0`. Use it only when the
+splitter's final shards are unstable for a font; the published ranges remain
+disjoint and cover the source cmap. `noto-sans-mono-cjk-kr` currently uses it.

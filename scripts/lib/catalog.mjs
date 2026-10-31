@@ -115,6 +115,7 @@ export async function buildCatalog({
       families[descriptor.id] = {
         version: descriptor.version,
         role: descriptor.role,
+        scripts: descriptor.scripts ?? ['cjk'],
         package: {
           releaseTag,
           fileName: result.packageFileName,
@@ -131,6 +132,7 @@ export async function buildCatalog({
       summary.push({
         id: descriptor.id,
         role: descriptor.role,
+        scripts: descriptor.scripts ?? ['cjk'],
         variants: result.manifest.variants.length,
         packageFileName: result.packageFileName,
         packageSha256: result.packageSha256,

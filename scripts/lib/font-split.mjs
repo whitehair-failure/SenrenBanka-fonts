@@ -1,7 +1,9 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { Buffer } from 'node:buffer';
 import { fontSplit as defaultFontSplit } from 'cn-font-split';
+import subsetFont from 'subset-font';
 import {
   formatUnicodeRanges,
   inspectFont,
@@ -14,6 +16,7 @@ import {
 } from './font.mjs';
 import { assertSafeFileName } from './paths.mjs';
 import { compareText } from './json.mjs';
+import { sha256 } from './hash.mjs';
 
 async function emptyDirectory(directory) {
   await fs.promises.rm(directory, { recursive: true, force: true });
@@ -84,6 +87,162 @@ function visibleCharacterSet(font) {
   return new Set([...font.characterSet].filter((codePoint) => !isUnicodeNoncharacter(codePoint)));
 }
 
+function unmappedShard(message) {
+  const error = new Error(message);
+  error.code = 'UNMAPPED_SHARD';
+  return error;
+}
+
+function assignExactSubsets(finalShards, subsets) {
+  const remainingGroups = new Map(
+    subsets.map((subset) => [subset.join(','), subset]),
+  );
+  const assignments = new Map();
+  for (const shard of finalShards) {
+    const signature = [...shard.characters].sort((left, right) => left - right).join(',');
+    if (!remainingGroups.has(signature)) continue;
+    assignments.set(shard.fileName, remainingGroups.get(signature));
+    remainingGroups.delete(signature);
+  }
+
+  // cn-font-split preserves some paired punctuation in both CMaps. Assign
+  // that browser-inert duplicate to the exact planned subset and keep the
+  // published unicode-range disjoint.
+  for (const shard of finalShards.filter((item) => !assignments.has(item.fileName))) {
+    const candidates = [...remainingGroups.entries()]
+      .map(([signature, group]) => ({
+        signature,
+        group,
+        extras: [...shard.characters].filter((codePoint) => !group.includes(codePoint)),
+        missing: group.filter((codePoint) => !shard.characters.has(codePoint)),
+      }))
+      .filter((item) => item.missing.length === 0 && item.extras.length <= 2)
+      .sort((left, right) => left.extras.length - right.extras.length);
+    if (candidates.length !== 1) {
+      const nearest = [...remainingGroups.values()]
+        .map((group) => ({
+          size: group.length,
+          missing: group.filter((codePoint) => !shard.characters.has(codePoint)).length,
+          extras: [...shard.characters].filter(
+            (codePoint) => !group.includes(codePoint),
+          ).length,
+        }))
+        .sort(
+          (left, right) =>
+            left.missing - right.missing || left.extras - right.extras,
+        )
+        .slice(0, 5);
+      throw unmappedShard(
+        `final shard ${shard.fileName} does not map to exactly one explicit subset ` +
+          `(characters=${shard.characters.size}, remaining=${remainingGroups.size}, ` +
+          `nearest=${JSON.stringify(nearest)})`,
+      );
+    }
+    assignments.set(shard.fileName, candidates[0].group);
+    remainingGroups.delete(candidates[0].signature);
+  }
+  if (remainingGroups.size !== 0) {
+    throw unmappedShard('final cn-font-split output is missing a normalized shard');
+  }
+  return assignments;
+}
+
+function deterministicSubsets(sourceCoverage, maxCodePoints = 256) {
+  const sorted = [...sourceCoverage].sort((left, right) => left - right);
+  const groups = [];
+  for (let index = 0; index < sorted.length; index += maxCodePoints) {
+    groups.push(sorted.slice(index, index + maxCodePoints));
+  }
+  return groups;
+}
+
+async function buildSubsetVariants({
+  input,
+  descriptor,
+  subsets,
+  sourceCoverage,
+  expectedFamilyName,
+}) {
+  const groups = subsets
+    .map((group) => [...group].sort((left, right) => left - right))
+    .sort((left, right) => left[0] - right[0] || left.length - right.length);
+  const variants = [];
+  const covered = new Set();
+  const fileNames = new Set();
+  for (const group of groups) {
+    const text = group.map((codePoint) => String.fromCodePoint(codePoint)).join('');
+    const output = await subsetFont(input, text, { targetFormat: 'woff2' });
+    if (!Buffer.isBuffer(output) || output.subarray(0, 4).toString('ascii') !== 'wOF2') {
+      throw new Error(`subset-font did not return a WOFF2 buffer for ${descriptor.id}`);
+    }
+    const inspection = inspectFont(output, `${descriptor.id} deterministic subset`);
+    validateFontMetadata(
+      inspection,
+      {
+        familyName: expectedFamilyName,
+        style: descriptor.output.style,
+        weight: descriptor.output.weight,
+        stretch: undefined,
+      },
+      `${descriptor.id} deterministic subset`,
+    );
+    const characters = visibleCharacterSet(inspection);
+    for (const codePoint of group) {
+      if (!characters.has(codePoint)) {
+        throw new Error(
+          `deterministic subset for ${descriptor.id} is missing U+${codePoint
+            .toString(16)
+            .toUpperCase()}`,
+        );
+      }
+      if (!sourceCoverage.has(codePoint)) {
+        throw new Error(
+          `deterministic subset for ${descriptor.id} contains U+${codePoint
+            .toString(16)
+            .toUpperCase()} not present in the source`,
+        );
+      }
+      covered.add(codePoint);
+    }
+    const extras = [...characters]
+      .filter((codePoint) => !group.includes(codePoint))
+      .sort((left, right) => left - right);
+    const hash = sha256(output);
+    let fileName = `${hash.slice(0, 12)}.woff2`;
+    let suffix = 0;
+    while (fileNames.has(fileName)) {
+      suffix += 1;
+      fileName = `${hash.slice(0, 12)}-${suffix}.woff2`;
+    }
+    fileNames.add(fileName);
+    variants.push({
+      file: `fonts/${fileName}`,
+      sourceName: fileName,
+      data: output,
+      weight: descriptor.output.weight,
+      style: descriptor.output.style,
+      display: descriptor.output.display,
+      unicodeRange: formatUnicodeRanges(intervalsFromCodePoints(group)),
+      cmapAliases: extras,
+      font: inspection.metadata,
+    });
+  }
+  for (const codePoint of sourceCoverage) {
+    if (!covered.has(codePoint)) {
+      throw new Error(
+        `deterministic subsets do not cover source U+${codePoint
+          .toString(16)
+          .toUpperCase()}`,
+      );
+    }
+  }
+  variants.sort((left, right) => compareText(left.file, right.file));
+  return {
+    variants,
+    generatedFiles: variants.map((variant) => variant.sourceName),
+  };
+}
+
 /**
  * The first pass obtains cn-font-split's language-aware grouping. The second
  * pass supplies explicit disjoint subsets, removing the tool's U+FFFF cmap
@@ -103,6 +262,15 @@ export async function splitCjkFont({
   sourceCoverage = new Set(
     [...sourceCoverage].filter((codePoint) => !isUnicodeNoncharacter(codePoint)),
   );
+  if (descriptor.output.subsetStrategy === 'subset-font') {
+    return buildSubsetVariants({
+      input,
+      descriptor,
+      subsets: deterministicSubsets(sourceCoverage),
+      sourceCoverage,
+      expectedFamilyName,
+    });
+  }
   const temporaryRoot = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'senrenbanka-split-'));
   const planningDir = path.join(temporaryRoot, 'planning');
   const finalDir = path.join(temporaryRoot, 'final');
@@ -217,46 +385,25 @@ export async function splitCjkFont({
       }
     }
 
-    const remainingGroups = new Map(
-      subsets.map((subset) => [subset.join(','), subset]),
-    );
-    const assignments = new Map();
-    for (const shard of finalShards) {
-      const signature = [...shard.characters].sort((left, right) => left - right).join(',');
-      if (!remainingGroups.has(signature)) continue;
-      assignments.set(shard.fileName, remainingGroups.get(signature));
-      remainingGroups.delete(signature);
-    }
-
-    // cn-font-split preserves some paired punctuation in both CMaps. Assign
-    // that browser-inert duplicate to the exact planned subset and keep the
-    // published unicode-range disjoint.
-    for (const shard of finalShards.filter((item) => !assignments.has(item.fileName))) {
-      const candidates = [...remainingGroups.entries()]
-        .map(([signature, group]) => ({
-          signature,
-          group,
-          extras: [...shard.characters].filter((codePoint) => !group.includes(codePoint)),
-          missing: group.filter((codePoint) => !shard.characters.has(codePoint)),
-        }))
-        .filter((item) => item.missing.length === 0 && item.extras.length <= 2)
-        .sort((left, right) => left.extras.length - right.extras.length);
-      if (candidates.length !== 1) {
-        throw new Error(
-          `final shard ${shard.fileName} does not map to exactly one explicit subset`,
-        );
-      }
-      assignments.set(shard.fileName, candidates[0].group);
-      remainingGroups.delete(candidates[0].signature);
-    }
-    if (remainingGroups.size !== 0) {
-      throw new Error('final cn-font-split output is missing a normalized shard');
+    let assignments;
+    try {
+      assignments = assignExactSubsets(finalShards, subsets);
+    } catch (error) {
+      if (error.code !== 'UNMAPPED_SHARD') throw error;
+      return buildSubsetVariants({
+        input,
+        descriptor,
+        subsets,
+        sourceCoverage,
+        expectedFamilyName,
+      });
     }
 
     const variants = [];
     const covered = new Set();
     for (const shard of finalShards) {
       const group = assignments.get(shard.fileName);
+      if (!group || group.length === 0) continue;
       for (const codePoint of group) {
         if (!shard.characters.has(codePoint)) {
           throw new Error(`final shard ${shard.fileName} is missing an explicit subset glyph`);

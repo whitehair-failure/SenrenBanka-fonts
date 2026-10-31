@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "id": "poor-story",
+  "familyName": "Poor Story",
+  "sourceFamilyName": "Poor Story",
+  "role": "core-cjk",
+  "scripts": ["hangul"],
+  "version": "1.0.0",
+  "source": {
+    "project": "Poor Story",
+    "version": "6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec",
+    "url": "https://github.com/google/fonts/tree/6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec/ofl/poorstory",
+    "revision": "6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec",
+    "retrievedAt": "2026-11-01",
+    "files": [
+      {
+        "fileName": "PoorStory-Regular.ttf",
+        "size": 3966768,
+        "sha256": "831ab87f7b5463f9cd83ac249bf386816f3a478f1d226427c88cac907adb7ee2",
+        "bootstrapKey": "source/fonts/PoorStory-Regular.ttf",
+        "download": {
+          "url": "https://raw.githubusercontent.com/google/fonts/6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec/ofl/poorstory/PoorStory-Regular.ttf",
+          "sha256": "831ab87f7b5463f9cd83ac249bf386816f3a478f1d226427c88cac907adb7ee2"
+        }
+      }
+    ]
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-11-01",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/google/fonts/tree/6c1dbe27dcf7d817d4b62cec033ba77fa8e2a5ec/ofl/poorstory",
+    "files": [
+      {
+        "name": "LICENSE.txt",
+        "sha256": "39de3de5f1873f89bca4af37823ab22e28e88d0d8f7fe2f07e82e9e6e9bf7b70"
+      }
+    ],
+    "reservedFontNames": [],
+    "rfn": {
+      "status": "not-applicable",
+      "basis": "The upstream OFL does not declare a Reserved Font Name."
+    }
+  },
+  "output": {
+    "type": "core-cjk",
+    "sourceFile": "PoorStory-Regular.ttf",
+    "weight": "400",
+    "style": "normal",
+    "display": "swap",
+    "chunkSize": 71680,
+    "languageAreas": true,
+    "fontFeature": true
+  },
+  "cssVariable": "--font-poor-story",
+  "fallbacks": ["Apple SD Gothic Neo", "Malgun Gothic", "cursive", "sans-serif"],
+  "provenance": {
+    "retrievedAt": "2026-11-01",
+    "processing": "Fix source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Pinned Google Fonts commit; no Reserved Font Name."
+  }
+}

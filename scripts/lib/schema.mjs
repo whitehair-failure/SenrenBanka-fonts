@@ -16,6 +16,7 @@ const sha256Schema = z.string().regex(SHA256_PATTERN, 'must be a lowercase SHA-2
 const idSchema = z.string().regex(ID, 'must be a lowercase kebab-case id');
 const versionSchema = z.string().regex(SEMVER, 'must be a semantic version');
 const dateSchema = z.string().regex(DATE, 'must use YYYY-MM-DD');
+const scriptsSchema = z.array(z.enum(['cjk', 'hangul'])).min(1).optional();
 const relativePathSchema = z
   .string()
   .max(240)
@@ -153,6 +154,7 @@ const coreOutputSchema = z
     chunkSize: z.number().int().min(256).max(256 * 1024),
     languageAreas: z.literal(true),
     fontFeature: z.literal(true),
+    subsetStrategy: z.literal('subset-font').optional(),
     rename: z.object({ to: z.string().min(1) }).strict().optional(),
   })
   .strict();
@@ -174,6 +176,7 @@ export const familyDescriptorSchema = z
     familyName: z.string().min(1),
     sourceFamilyName: z.string().min(1),
     role: z.enum(['fixed', 'core-cjk']),
+    scripts: scriptsSchema,
     version: versionSchema,
     source: sourceSchema,
     license: licenseSchema,
@@ -220,6 +223,13 @@ export const familyDescriptorSchema = z
         code: 'custom',
         path: ['output', 'type'],
         message: 'fixed role requires fixed output',
+      });
+    }
+    if (descriptor.scripts?.includes('hangul') && descriptor.role !== 'core-cjk') {
+      context.addIssue({
+        code: 'custom',
+        path: ['scripts'],
+        message: 'hangul script requires core-cjk role',
       });
     }
 
@@ -360,6 +370,7 @@ export const familyManifestSchema = z
     familyName: z.string().min(1),
     sourceFamilyName: z.string().min(1),
     role: z.enum(['fixed', 'core-cjk']),
+    scripts: scriptsSchema,
     version: versionSchema,
     cssVariable: z.string().regex(CSS_VAR),
     fallbacks: z.array(z.string().min(1)).min(1),
@@ -483,6 +494,7 @@ const catalogFamilySchema = z
   .object({
     version: versionSchema,
     role: z.enum(['fixed', 'core-cjk']),
+    scripts: scriptsSchema,
     package: releaseAssetSchema,
     source: releaseAssetSchema,
   })

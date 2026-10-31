@@ -183,6 +183,17 @@
           "const": 1,
           "type": "number"
         },
+        "scripts": {
+          "items": {
+            "enum": [
+              "cjk",
+              "hangul"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
         "source": {
           "additionalProperties": false,
           "properties": {

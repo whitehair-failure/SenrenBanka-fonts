@@ -6,11 +6,24 @@ toolchain. Source fonts and generated font packages are deliberately excluded fr
 
 ## Catalog v1
 
-- 20 local-provider families from SenrenBanka.
-- 3 full CJK families built with `cn-font-split@7.4.3`:
-  `zhuque-fangsong`, `lxgw-wenkai`, and `ark-pixel-12px`.
+- 26 local-provider families from SenrenBanka.
+- 9 full core families:
+  - 3 CJK families: `zhuque-fangsong`, `lxgw-wenkai`, `ark-pixel-12px`.
+  - 6 Korean families: `gothic-a1`, `gowun-batang`, `galmuri11`,
+    `noto-sans-mono-cjk-kr`, `dongle`, `poor-story`.
 - 17 fixed WOFF2 families preserved as declared variants.
 - The 6 Fontsource npm-provider families are not mirrored.
+- Core families declare `scripts` (`["cjk"]` or `["hangul"]`); the site uses
+  this to route Hangul-only content subsets and `unicode-range`.
+- `output.subsetStrategy: "subset-font"` opts a family into deterministic
+  code-point chunking with `subset-font` when `cn-font-split` final shards are
+  unstable. It is currently used by `noto-sans-mono-cjk-kr`.
+
+### Korean core families
+
+The six Korean families are OFL-1.1 with no Reserved Font Name. They are
+published as `core-cjk` families with `scripts: ["hangul"]`; the site subsets
+them to Hangul-only WOFF2 files and scopes them with `unicode-range`.
 
 Every build emits one family package and one source archive per family, plus
 `catalog.json`, checksum sidecars, and `SHA256SUMS`. Archives are deterministic:
@@ -31,18 +44,18 @@ npm run catalog:validate
 
 npm run bootstrap:build -- \
   --bootstrap-dir .cache/bootstrap \
-  --out bootstrap-sources-v1.0.0.zip
+  --out bootstrap-sources-v1.1.0.zip
 npm run bootstrap:verify -- \
-  --bundle bootstrap-sources-v1.0.0.zip \
+  --bundle bootstrap-sources-v1.1.0.zip \
   --sha256 "<published-bootstrap-sha256>"
 
 node scripts/build-catalog.mjs \
   --out artifacts \
-  --catalog-version 1.0.0 \
+  --catalog-version 1.1.0 \
   --bootstrap-dir .cache/bootstrap \
   --bootstrap-sha256 "<published-bootstrap-sha256>"
 
-npm run release:verify -- --dir artifacts --catalog-version 1.0.0
+npm run release:verify -- --dir artifacts --catalog-version 1.1.0
 ```
 
 The bootstrap directory uses published source-archive paths:
@@ -60,8 +73,8 @@ The bootstrap directory uses published source-archive paths:
 For a reproducible release check, build twice and compare:
 
 ```bash
-node scripts/build-catalog.mjs --out artifacts-repro --catalog-version 1.0.0 --bootstrap-dir .cache/bootstrap
-npm run release:verify -- --dir artifacts --compare-dir artifacts-repro
+node scripts/build-catalog.mjs --out artifacts-repro --catalog-version 1.1.0 --bootstrap-dir .cache/bootstrap --bootstrap-sha256 "<published-bootstrap-sha256>"
+npm run release:verify -- --dir artifacts --compare-dir artifacts-repro --catalog-version 1.1.0
 ```
 
 The generated catalog is intentionally not committed. It contains release hashes
