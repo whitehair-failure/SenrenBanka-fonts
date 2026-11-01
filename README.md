@@ -6,15 +6,19 @@ toolchain. Source fonts and generated font packages are deliberately excluded fr
 
 ## Catalog v1
 
-- 26 local-provider families from SenrenBanka.
-- 9 full core families:
+- 31 local-provider families from SenrenBanka.
+- 14 full core families:
   - 3 CJK families: `zhuque-fangsong`, `lxgw-wenkai`, `ark-pixel-12px`.
   - 6 Korean families: `gothic-a1`, `gowun-batang`, `galmuri11`,
     `noto-sans-mono-cjk-kr`, `dongle`, `poor-story`.
+  - 5 Traditional Chinese families: `noto-sans-tc`, `noto-serif-tc`,
+    `lxgw-wenkai-tc`, `fusion-pixel-tc`, `noto-sans-mono-cjk-tc`.
 - 17 fixed WOFF2 families preserved as declared variants.
 - The 6 Fontsource npm-provider families are not mirrored.
-- Core families declare `scripts` (`["cjk"]` or `["hangul"]`); the site uses
-  this to route Hangul-only content subsets and `unicode-range`.
+- Core families declare `scripts` (`["cjk"]`, `["hangul"]`, or
+  `["cjk","han-traditional"]`); the site uses this to route Hangul-only
+  content subsets and `unicode-range`, and to enforce page-scoped Traditional
+  Chinese font coverage.
 - `output.subsetStrategy: "subset-font"` opts a family into deterministic
   code-point chunking with `subset-font` when `cn-font-split` final shards are
   unstable. It is currently used by `noto-sans-mono-cjk-kr`.
@@ -24,6 +28,23 @@ toolchain. Source fonts and generated font packages are deliberately excluded fr
 The six Korean families are OFL-1.1 with no Reserved Font Name. They are
 published as `core-cjk` families with `scripts: ["hangul"]`; the site subsets
 them to Hangul-only WOFF2 files and scopes them with `unicode-range`.
+
+### Traditional Chinese core families
+
+The five TC families are OFL-1.1 and published as `core-cjk` families with
+`scripts: ["cjk","han-traditional"]`. `cjk` must stay declared so the site's
+Han coverage audit still checks them. The site does not use `unicode-range` for
+TC (TC and SC share most code points); it remaps the design's font variables
+inside `html:lang(zh-TW)` and registers the TC families only on zh-TW pages.
+
+- `noto-sans-tc` / `noto-serif-tc` / `noto-sans-mono-cjk-tc`: static regional
+  OTFs from `notofonts/noto-cjk` (Sans2.004 / Serif2.003); no variable-font
+  Source RFN involvement.
+- `lxgw-wenkai-tc`: `lxgw/LxgwWenkaiTC` v1.530 Medium; the TC OFL declares no
+  Reserved Font Name.
+- `fusion-pixel-tc`: `TakWolf/fusion-pixel-font` 2026.10.25 12px monospaced
+  zh-TW. The package bundles the Ark Pixel, Cubic 11, and Galmuri license
+  texts because those fonts are merged upstream.
 
 Every build emits one family package and one source archive per family, plus
 `catalog.json`, checksum sidecars, and `SHA256SUMS`. Archives are deterministic:

@@ -18,9 +18,9 @@ import {
   repoRoot,
 } from './helpers/fixtures.mjs';
 
-test('current catalog describes exactly the 26 local-provider families', async () => {
+test('current catalog describes exactly the 31 local-provider families', async () => {
   const descriptors = await loadCurrentDescriptors(repoRoot);
-  assert.equal(descriptors.length, 26);
+  assert.equal(descriptors.length, 31);
   const core = descriptors
     .filter((item) => item.descriptor.role === 'core-cjk')
     .map((item) => item.descriptor.id)
@@ -28,11 +28,16 @@ test('current catalog describes exactly the 26 local-provider families', async (
   assert.deepEqual(core, [
     'ark-pixel-12px',
     'dongle',
+    'fusion-pixel-tc',
     'galmuri11',
     'gothic-a1',
     'gowun-batang',
     'lxgw-wenkai',
+    'lxgw-wenkai-tc',
     'noto-sans-mono-cjk-kr',
+    'noto-sans-mono-cjk-tc',
+    'noto-sans-tc',
+    'noto-serif-tc',
     'poor-story',
     'zhuque-fangsong',
   ]);
@@ -51,6 +56,22 @@ test('current catalog describes exactly the 26 local-provider families', async (
   ]);
   assert.ok(
     korean.every(
+      (id) => descriptors.find((item) => item.descriptor.id === id).descriptor.role === 'core-cjk',
+    ),
+  );
+  const traditional = descriptors
+    .filter((item) => item.descriptor.scripts?.includes('han-traditional'))
+    .map((item) => item.descriptor.id)
+    .sort();
+  assert.deepEqual(traditional, [
+    'fusion-pixel-tc',
+    'lxgw-wenkai-tc',
+    'noto-sans-mono-cjk-tc',
+    'noto-sans-tc',
+    'noto-serif-tc',
+  ]);
+  assert.ok(
+    traditional.every(
       (id) => descriptors.find((item) => item.descriptor.id === id).descriptor.role === 'core-cjk',
     ),
   );

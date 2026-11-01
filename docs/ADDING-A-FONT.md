@@ -125,10 +125,18 @@ Core families may declare `scripts`:
 
 - `["cjk"]` (default when omitted) for Han/Kana core families.
 - `["hangul"]` for Korean core families.
+- `["cjk", "han-traditional"]` for Traditional Chinese core families.
 
 The site uses this field to generate Hangul-only content subsets and
-`unicode-range` rules. It is a routing declaration, not a full coverage claim;
-actual coverage is verified from the source cmap.
+`unicode-range` rules, and to enforce page-scoped Traditional Chinese coverage.
+It is a routing declaration, not a full coverage claim; actual coverage is
+verified from the source cmap.
+
+Traditional Chinese families must keep `cjk` alongside `han-traditional`:
+the site audit uses `cjk` to check Han coverage. They cannot use
+`unicode-range` isolation because TC and SC share most code points; the site
+remaps font variables inside `html:lang(zh-TW)` and registers the family only
+on zh-TW pages.
 
 ## Deterministic Subset Fallback
 

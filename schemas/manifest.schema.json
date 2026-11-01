@@ -187,7 +187,8 @@
           "items": {
             "enum": [
               "cjk",
-              "hangul"
+              "hangul",
+              "han-traditional"
             ],
             "type": "string"
           },

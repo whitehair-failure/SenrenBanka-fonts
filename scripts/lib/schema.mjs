@@ -16,7 +16,7 @@ const sha256Schema = z.string().regex(SHA256_PATTERN, 'must be a lowercase SHA-2
 const idSchema = z.string().regex(ID, 'must be a lowercase kebab-case id');
 const versionSchema = z.string().regex(SEMVER, 'must be a semantic version');
 const dateSchema = z.string().regex(DATE, 'must use YYYY-MM-DD');
-const scriptsSchema = z.array(z.enum(['cjk', 'hangul'])).min(1).optional();
+const scriptsSchema = z.array(z.enum(['cjk', 'hangul', 'han-traditional'])).min(1).optional();
 const relativePathSchema = z
   .string()
   .max(240)
@@ -225,12 +225,14 @@ export const familyDescriptorSchema = z
         message: 'fixed role requires fixed output',
       });
     }
-    if (descriptor.scripts?.includes('hangul') && descriptor.role !== 'core-cjk') {
-      context.addIssue({
-        code: 'custom',
-        path: ['scripts'],
-        message: 'hangul script requires core-cjk role',
-      });
+    for (const script of ['hangul', 'han-traditional']) {
+      if (descriptor.scripts?.includes(script) && descriptor.role !== 'core-cjk') {
+        context.addIssue({
+          code: 'custom',
+          path: ['scripts'],
+          message: `${script} script requires core-cjk role`,
+        });
+      }
     }
 
     const outputNames = new Set();

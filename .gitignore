@@ -1,7 +1,9 @@
 node_modules/
 .cache/
 artifacts/
+artifacts-*/
 artifacts-repro/
+local-catalog-*/
 bootstrap-sources*.zip.sha256
 .DS_Store
 Thumbs.db

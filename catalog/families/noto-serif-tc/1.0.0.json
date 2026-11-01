@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "id": "noto-serif-tc",
+  "familyName": "Noto Serif TC",
+  "sourceFamilyName": "Noto Serif TC",
+  "role": "core-cjk",
+  "scripts": [
+    "cjk",
+    "han-traditional"
+  ],
+  "version": "1.0.0",
+  "source": {
+    "project": "Noto Serif TC",
+    "version": "Serif2.003",
+    "url": "https://github.com/notofonts/noto-cjk",
+    "revision": "Serif2.003",
+    "retrievedAt": "2026-11-01",
+    "files": [
+      {
+        "fileName": "NotoSerifTC-Regular.otf",
+        "size": 7936104,
+        "sha256": "63515eb0622d589a2f4062e8757c598b3da3bffd053f69abd181c210158ef10c",
+        "bootstrapKey": "source/fonts/NotoSerifTC-Regular.otf",
+        "download": {
+          "url": "https://github.com/notofonts/noto-cjk/releases/download/Serif2.003/15_NotoSerifTC.zip",
+          "sha256": "cadfc894416096a51174e8a350e5cb872f99a8c4b1d36c3990e7a9741e1456ab",
+          "archiveMember": "SubsetOTF/TC/NotoSerifTC-Regular.otf"
+        }
+      }
+    ]
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-11-01",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/notofonts/noto-cjk",
+    "files": [
+      {
+        "name": "LICENSE.txt",
+        "sha256": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2"
+      }
+    ],
+    "reservedFontNames": [],
+    "rfn": {
+      "status": "not-applicable",
+      "basis": "The upstream noto-cjk OFL does not declare a Reserved Font Name."
+    }
+  },
+  "output": {
+    "type": "core-cjk",
+    "sourceFile": "NotoSerifTC-Regular.otf",
+    "weight": "400",
+    "style": "normal",
+    "display": "swap",
+    "chunkSize": 71680,
+    "languageAreas": true,
+    "fontFeature": true,
+    "subsetStrategy": "subset-font"
+  },
+  "cssVariable": "--font-noto-serif-tc",
+  "fallbacks": [
+    "Songti TC",
+    "PingFang TC",
+    "serif"
+  ],
+  "provenance": {
+    "retrievedAt": "2026-11-01",
+    "processing": "Fix the source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Static regional OTF from the pinned Serif2.003 release; no variable-font Source Han RFN involvement."
+  }
+}

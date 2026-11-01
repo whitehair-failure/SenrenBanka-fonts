@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "lxgw-wenkai-tc",
+  "familyName": "LXGW WenKai TC",
+  "sourceFamilyName": "LXGW WenKai TC Medium",
+  "role": "core-cjk",
+  "scripts": [
+    "cjk",
+    "han-traditional"
+  ],
+  "version": "1.0.0",
+  "source": {
+    "project": "LXGW WenKai TC",
+    "version": "1.530",
+    "url": "https://github.com/lxgw/LxgwWenkaiTC",
+    "revision": "v1.530",
+    "retrievedAt": "2026-11-01",
+    "files": [
+      {
+        "fileName": "LXGWWenKaiTC-Medium.ttf",
+        "size": 15122300,
+        "sha256": "649efd8516f42d36eacc05480d5dbd2713fb28fbd2bbee8ea76fc40875045c49",
+        "bootstrapKey": "source/fonts/LXGWWenKaiTC-Medium.ttf",
+        "download": {
+          "url": "https://github.com/lxgw/LxgwWenkaiTC/releases/download/v1.530/LXGWWenKaiTC-Medium.ttf",
+          "sha256": "649efd8516f42d36eacc05480d5dbd2713fb28fbd2bbee8ea76fc40875045c49"
+        }
+      }
+    ]
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-11-01",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/lxgw/LxgwWenkaiTC",
+    "files": [
+      {
+        "name": "OFL.txt",
+        "sha256": "1a13783bf4337242834b60309cdcdbeb566ae3f923576fdbba8b78db9d174def"
+      }
+    ],
+    "reservedFontNames": [],
+    "rfn": {
+      "status": "not-applicable",
+      "basis": "The reviewed OFL.txt declares no Reserved Font Name. The upstream README asks derivatives to avoid 霞鶩/LXGW by community convention, but states the RFN clause is not legally binding because no RFN is declared."
+    }
+  },
+  "output": {
+    "type": "core-cjk",
+    "sourceFile": "LXGWWenKaiTC-Medium.ttf",
+    "weight": "500",
+    "style": "normal",
+    "display": "swap",
+    "chunkSize": 71680,
+    "languageAreas": true,
+    "fontFeature": true
+  },
+  "cssVariable": "--font-lxgw-tc",
+  "fallbacks": [
+    "Kaiti TC",
+    "Songti TC",
+    "serif"
+  ],
+  "provenance": {
+    "retrievedAt": "2026-11-01",
+    "processing": "Fix the source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Medium face matches the existing LXGW WenKai GB 500 weight; direct TTF release asset."
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "id": "fusion-pixel-tc",
+  "familyName": "Fusion Pixel 12px TC",
+  "sourceFamilyName": "Fusion Pixel 12px Mono zh-TW",
+  "role": "core-cjk",
+  "scripts": [
+    "cjk",
+    "han-traditional"
+  ],
+  "version": "1.0.0",
+  "source": {
+    "project": "Fusion Pixel Font",
+    "version": "2026.10.25",
+    "url": "https://github.com/TakWolf/fusion-pixel-font",
+    "revision": "2026.10.25",
+    "retrievedAt": "2026-11-01",
+    "files": [
+      {
+        "fileName": "fusion-pixel-12px-monospaced-zh_tw.otf",
+        "size": 5106780,
+        "sha256": "c07852205cf057216c762f3924507f03e02039c4d34d987f77adc787939742ee",
+        "bootstrapKey": "source/fonts/fusion-pixel-12px-monospaced-zh_tw.otf",
+        "download": {
+          "url": "https://github.com/TakWolf/fusion-pixel-font/releases/download/2026.10.25/fusion-pixel-font-12px-monospaced-otf-v2026.10.25.zip",
+          "sha256": "6e4cd37ad32ccdab76858759397a01c3ec372ac37fdf3acf0705da7b44281302",
+          "archiveMember": "fusion-pixel-12px-monospaced-zh_tw.otf"
+        }
+      }
+    ]
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-11-01",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/TakWolf/fusion-pixel-font",
+    "files": [
+      {
+        "name": "OFL.txt",
+        "sha256": "bc518cf64b8032c07690f33cc270c35c179255a6ac8efa7c165ebae7e8f76a63"
+      },
+      {
+        "name": "ark-pixel-OFL.txt",
+        "sha256": "3ab41567e68e3988ba1ef16dd2644eca95ca5648ea12e7d46e6287fc0bbe5aee"
+      },
+      {
+        "name": "cubic-11-OFL.txt",
+        "sha256": "2b6e5938e5cffa0b9e183bd05f8c363e174e7ebed1a0556e2855fd1707fa2188"
+      },
+      {
+        "name": "galmuri-LICENSE.txt",
+        "sha256": "86a3ee9495f942f0243f18c103da9faca27adb88142613edb8bb852e56c892c1"
+      }
+    ],
+    "reservedFontNames": [],
+    "rfn": {
+      "status": "not-applicable",
+      "basis": "The top-level OFL declares no Reserved Font Name; the package also bundles the Ark Pixel, Cubic 11 and Galmuri license texts used by the merged font."
+    }
+  },
+  "output": {
+    "type": "core-cjk",
+    "sourceFile": "fusion-pixel-12px-monospaced-zh_tw.otf",
+    "weight": "400",
+    "style": "normal",
+    "display": "swap",
+    "chunkSize": 71680,
+    "languageAreas": true,
+    "fontFeature": true
+  },
+  "cssVariable": "--font-fusion-pixel-tc",
+  "fallbacks": [
+    "PingFang TC",
+    "Microsoft JhengHei",
+    "monospace"
+  ],
+  "provenance": {
+    "retrievedAt": "2026-11-01",
+    "processing": "Fix the source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Replaces Ark Pixel TC: the Ark Pixel zh_tw variant misses 48 common Traditional Chinese characters, while Fusion Pixel TC covers all 847 corpus Han characters at a similar subset size."
+  }
+}

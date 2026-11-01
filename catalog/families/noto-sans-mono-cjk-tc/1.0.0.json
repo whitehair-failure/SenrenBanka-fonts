@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "id": "noto-sans-mono-cjk-tc",
+  "familyName": "Noto Sans Mono CJK TC",
+  "sourceFamilyName": "Noto Sans Mono CJK TC",
+  "role": "core-cjk",
+  "scripts": [
+    "cjk",
+    "han-traditional"
+  ],
+  "version": "1.0.0",
+  "source": {
+    "project": "Noto Sans Mono CJK TC",
+    "version": "Sans2.004",
+    "url": "https://github.com/notofonts/noto-cjk",
+    "revision": "Sans2.004",
+    "retrievedAt": "2026-11-01",
+    "files": [
+      {
+        "fileName": "NotoSansMonoCJKtc-Regular.otf",
+        "size": 16392304,
+        "sha256": "82a040aed900bba51b5990bc158a86b264c8ad5071a2d8911e8696350e0794b3",
+        "bootstrapKey": "source/fonts/NotoSansMonoCJKtc-Regular.otf",
+        "download": {
+          "url": "https://github.com/notofonts/noto-cjk/releases/download/Sans2.004/14_NotoSansMonoCJKtc.zip",
+          "sha256": "0126cbeef724edf21fbaeb113739adf392679fd90a2897c76159d1141df9e8c6",
+          "archiveMember": "NotoSansMonoCJKtc-Regular.otf"
+        }
+      }
+    ]
+  },
+  "license": {
+    "spdx": "OFL-1.1",
+    "approvedForRedistribution": true,
+    "reviewedAt": "2026-11-01",
+    "reviewedBy": "SenrenBanka maintainers",
+    "evidenceUrl": "https://github.com/notofonts/noto-cjk",
+    "files": [
+      {
+        "name": "LICENSE.txt",
+        "sha256": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2"
+      }
+    ],
+    "reservedFontNames": [],
+    "rfn": {
+      "status": "not-applicable",
+      "basis": "The upstream noto-cjk OFL does not declare a Reserved Font Name."
+    }
+  },
+  "output": {
+    "type": "core-cjk",
+    "sourceFile": "NotoSansMonoCJKtc-Regular.otf",
+    "weight": "400",
+    "style": "normal",
+    "display": "swap",
+    "chunkSize": 71680,
+    "languageAreas": true,
+    "fontFeature": true,
+    "subsetStrategy": "subset-font"
+  },
+  "cssVariable": "--font-noto-sans-mono-cjk-tc",
+  "fallbacks": [
+    "PingFang TC",
+    "Microsoft JhengHei",
+    "monospace"
+  ],
+  "provenance": {
+    "retrievedAt": "2026-11-01",
+    "processing": "Fix the source bytes, verify SHA-256, then package by the shared descriptor-driven pipeline.",
+    "notes": "Static regional OTF from the pinned Sans2.004 release; no variable-font Source Han RFN involvement."
+  }
+}
